@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: pixel-postgres
+    environment:
+      POSTGRES_DB: pixel_ai
+      POSTGRES_USER: pixel_user
+      POSTGRES_PASSWORD: pixel_secure_2024
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - pixel-network
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: pixel-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - pixel-network
+    restart: unless-stopped
+
+  # FastAPI Backend
+  api:
+    build: 
+      context: ./api
+      dockerfile: ../docker/api/Dockerfile
+    container_name: pixel-api
+    environment:
+      - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=production
+      - SECRET_KEY=${SECRET_KEY:-pixel-ai-secret-key-2024}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./generated-bots:/app/generated-bots
+      - ./templates:/app/templates
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - pixel-network
+    restart: unless-stopped
+
+  # React Frontend  
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile
+    container_name: pixel-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_ENVIRONMENT=production
+    depends_on:
+      - api
+    networks:
+      - pixel-network
+    restart: unless-stopped
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: pixel-chromadb
+    environment:
+      - CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER=chromadb.auth.token.TokenAuthCredentialsProvider
+      - CHROMA_SERVER_AUTH_CREDENTIALS=pixel-ai-token-2024
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb_data:/chroma/chroma
+    networks:
+      - pixel-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  chromadb_data:
+    driver: local
+
+networks:
+  pixel-network:
+    driver: bridge
+    name: pixel-ai-network
