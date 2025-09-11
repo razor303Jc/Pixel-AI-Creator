@@ -16,7 +16,12 @@ from api.services.ai_generator import AIAssistantGenerator
 from api.services.client_manager import ClientManager
 from api.services.razorflow_integration import RazorflowIntegration
 from api.services.template_manager import TemplateManager
-from api.models.client import ClientCreate, ClientResponse, ProjectCreate, ProjectResponse
+from api.models.client import (
+    ClientCreate,
+    ClientResponse,
+    ProjectCreate,
+    ProjectResponse,
+)
 from api.routes.embeddings import router as embeddings_router
 from api.routes.clients import router as clients_router
 from api.routes.chatbots import router as chatbots_router
@@ -50,7 +55,7 @@ template_manager = TemplateManager()
 
 # Include routers with /api prefix
 app.include_router(embeddings_router, prefix="/api")
-app.include_router(clients_router, prefix="/api") 
+app.include_router(clients_router, prefix="/api")
 app.include_router(chatbots_router, prefix="/api")
 app.include_router(conversations_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
