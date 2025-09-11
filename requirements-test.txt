@@ -7,6 +7,7 @@ httpx>=0.24.0
 pytest-mock>=3.11.0
 factory-boy>=3.3.0  # For test data generation
 faker>=19.0.0  # For generating fake data
+python-dotenv>=1.0.0  # For environment variable loading
 
 # Performance testing
 pytest-benchmark>=4.0.0

@@ -48,12 +48,12 @@ client_manager = ClientManager()
 razorflow_integration = RazorflowIntegration()
 template_manager = TemplateManager()
 
-# Include routers
-app.include_router(embeddings_router)
-app.include_router(clients_router)
-app.include_router(chatbots_router)
-app.include_router(conversations_router)
-app.include_router(auth_router)
+# Include routers with /api prefix
+app.include_router(embeddings_router, prefix="/api")
+app.include_router(clients_router, prefix="/api") 
+app.include_router(chatbots_router, prefix="/api")
+app.include_router(conversations_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
 
 
 @app.on_event("startup")

@@ -12,6 +12,10 @@ import asyncio
 import httpx
 import json
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables first
+load_dotenv()
 
 # Add api directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'api'))
@@ -193,16 +197,32 @@ async def main():
     # Test database models
     test_results.append(("Database Models", await test_database_models()))
     
+    # Initialize database tables before API tests
+    print("🔍 Initializing Database...")
+    try:
+        from api.core.database import init_db
+        await init_db()
+        print("✅ Database tables initialized")
+        db_init_success = True
+    except Exception as e:
+        print(f"❌ Database initialization failed: {e}")
+        db_init_success = False
+    
+    test_results.append(("Database Init", db_init_success))
+    
     # Test API health
     test_results.append(("API Health", await test_api_health()))
     
-    # Test authentication
-    auth_success, auth_token = await test_auth_endpoints()
-    test_results.append(("Authentication", auth_success))
-    
-    # Test protected endpoints if auth works
-    if auth_success and auth_token:
-        test_results.append(("Protected Endpoints", await test_protected_endpoints(auth_token)))
+    # Test authentication (only if database init succeeded)
+    if db_init_success:
+        auth_success, auth_token = await test_auth_endpoints()
+        test_results.append(("Authentication", auth_success))
+        
+        # Test protected endpoints if auth works
+        if auth_success and auth_token:
+            test_results.append(("Protected Endpoints", await test_protected_endpoints(auth_token)))
+    else:
+        print("⚠️  Skipping authentication tests due to database init failure")
     
     # Summary
     print("\n📊 Test Results Summary:")
