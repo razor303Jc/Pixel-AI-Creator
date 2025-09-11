@@ -27,6 +27,7 @@ from routes.clients import router as clients_router
 from routes.chatbots import router as chatbots_router
 from routes.conversations import router as conversations_router
 from routes.analytics_clean import router as analytics_router
+from routes.language import router as language_router
 from auth.routes import router as auth_router
 
 # Initialize FastAPI app
@@ -66,6 +67,7 @@ app.include_router(auth_router, prefix="/api")
 from routes.ai_conversation import router as ai_conversation_router
 
 app.include_router(ai_conversation_router, prefix="/api")
+app.include_router(language_router)
 
 
 @app.on_event("startup")

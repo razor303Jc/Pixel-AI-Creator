@@ -46,5 +46,9 @@ python-multipart==0.0.6
 textblob==0.17.1
 nltk==3.8.1
 
+# Multi-language support (using deep-translator instead of googletrans for better compatibility)
+deep-translator==1.11.4
+langdetect==1.0.9
+
 # Monitoring
 structlog==23.2.0
