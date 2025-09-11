@@ -13,7 +13,7 @@ import uuid
 from typing import List, Dict, Optional, Any
 import chromadb
 import openai
-from ..core.config import Settings as AppSettings
+from core.config import Settings as AppSettings
 
 logger = logging.getLogger(__name__)
 

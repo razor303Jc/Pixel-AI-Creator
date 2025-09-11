@@ -1,0 +1,23 @@
+{
+  "name": "pixel-ai-creator-tests",
+  "version": "1.0.0",
+  "description": "Test suite for Pixel-AI-Creator frontend and API",
+  "scripts": {
+    "test": "playwright test",
+    "test:frontend": "playwright test test_frontend_comprehensive_playwright.spec.js",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:headed": "playwright test --headed",
+    "test:api": "newman run Pixel-AI-Creator-Complete-API-Tests.postman_collection.json",
+    "test:all": "./run_comprehensive_tests.sh",
+    "install:deps": "npm install && npx playwright install"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "newman": "^6.0.0",
+    "newman-reporter-htmlextra": "^1.23.0"
+  },
+  "keywords": ["testing", "playwright", "postman", "frontend", "api"],
+  "author": "Pixel-AI-Creator Team",
+  "license": "MIT"
+}

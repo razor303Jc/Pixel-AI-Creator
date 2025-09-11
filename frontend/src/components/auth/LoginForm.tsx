@@ -4,7 +4,11 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, LogIn, Mail, Lock } from 'lucide-react';
 import { AuthContext } from '../../contexts/AuthContext';
 
-const LoginForm = () => {
+interface LoginFormProps {
+  onSwitchToRegister: () => void;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -195,6 +199,7 @@ const LoginForm = () => {
                       <Button 
                         variant="link" 
                         className="p-0 fw-semibold"
+                        onClick={onSwitchToRegister}
                         style={{
                           textDecoration: 'none',
                           color: '#667eea'

@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from api.core.config import settings
+from core.config import settings
 
 # Create async engine
 engine = create_async_engine(

@@ -13,8 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, or_, func, desc, asc
 from sqlalchemy.orm import selectinload
 
-from api.core.database import get_db, Conversation, Message, Project
-from api.models.conversation import (
+from core.database import get_db, Conversation, Message, Project
+from models.conversation import (
     ConversationCreate,
     ConversationResponse,
     ConversationUpdate,
@@ -24,7 +24,7 @@ from api.models.conversation import (
     ConversationSummary,
     ConversationStats,
 )
-from api.auth.middleware import get_current_user
+from auth.middleware import get_current_user
 
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 

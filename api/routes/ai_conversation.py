@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import structlog
 
 from core.database import get_db, Conversation, Message, Project
-from core.auth import get_current_user
+from auth.middleware import get_current_user
 from services.openai_service import OpenAIService
 from services.vector_storage import VectorStorageService
 from sqlalchemy import select

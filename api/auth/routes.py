@@ -15,7 +15,7 @@ from sqlalchemy import select
 from typing import Dict, Any
 import logging
 
-from api.core.database import get_db, User
+from core.database import get_db, User
 from .models import (
     UserRegistrationRequest,
     UserLoginRequest,

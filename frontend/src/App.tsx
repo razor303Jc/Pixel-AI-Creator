@@ -29,7 +29,7 @@ const AppContent = () => {
           <div className="mb-4">
             <span className="display-2">🤖</span>
           </div>
-          <Spinner animation="border" size="lg" className="mb-3" />
+          <Spinner animation="border" className="mb-3" style={{ width: '3rem', height: '3rem' }} />
           <h4 className="fw-light">Loading Pixel AI Creator...</h4>
         </motion.div>
       </div>

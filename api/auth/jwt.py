@@ -13,7 +13,7 @@ import bcrypt
 from datetime import datetime, timedelta
 from typing import Dict, Any
 from fastapi import HTTPException, status
-from api.core.config import Settings
+from core.config import Settings
 
 settings = Settings()
 

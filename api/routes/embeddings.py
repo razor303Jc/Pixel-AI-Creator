@@ -12,8 +12,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 
-from ..services.vector_storage import VectorStorageService
-from ..core.config import Settings
+from services.vector_storage import VectorStorageService
+from core.config import Settings
 
 
 # Pydantic models for request/response

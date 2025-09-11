@@ -110,6 +110,23 @@ const retryRequest = async (requestFn, retries = MAX_RETRIES) => {
 
 // API Service Methods
 export const apiService = {
+  // Generic HTTP methods
+  get: async (url) => {
+    return await retryRequest(() => apiClient.get(url));
+  },
+
+  post: async (url, data) => {
+    return await retryRequest(() => apiClient.post(url, data));
+  },
+
+  put: async (url, data) => {
+    return await retryRequest(() => apiClient.put(url, data));
+  },
+
+  delete: async (url) => {
+    return await retryRequest(() => apiClient.delete(url));
+  },
+
   // Authentication endpoints
   auth: {
     login: async (credentials) => {

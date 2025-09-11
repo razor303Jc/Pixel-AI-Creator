@@ -82,7 +82,7 @@ const authReducer = (state, action) => {
 };
 
 // Create authentication context
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 // Authentication provider component
 export const AuthProvider = ({ children }) => {

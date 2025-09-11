@@ -4,7 +4,11 @@ import { motion } from 'framer-motion';
 import { UserPlus, Mail, Lock, User, Building } from 'lucide-react';
 import { AuthContext } from '../../contexts/AuthContext';
 
-const RegisterForm = () => {
+interface RegisterFormProps {
+  onSwitchToLogin: () => void;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -320,6 +324,7 @@ const RegisterForm = () => {
                       <Button 
                         variant="link" 
                         className="p-0 fw-semibold"
+                        onClick={onSwitchToLogin}
                         style={{
                           textDecoration: 'none',
                           color: '#667eea'

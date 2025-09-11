@@ -1,0 +1,34 @@
+Pixel-AI-Creator Test Suite Summary
+====================================
+Timestamp: Thu Sep 11 04:58:28 PM BST 2025
+Test Run ID: 20250911_165710
+
+Services Tested:
+- Frontend: http://localhost:3002
+- API: http://localhost:8002
+
+Test Results:
+- Playwright (Frontend): ✅ PASSED
+- Postman (API): ❌ FAILED
+
+Reports Generated:
+- Summary: /home/jc/Documents/ChatBot-Project/Pixel-AI-Creator/test-reports/test-summary-20250911_165710.txt
+- Playwright: /home/jc/Documents/ChatBot-Project/Pixel-AI-Creator/test-reports/playwright-20250911_165710/index.html
+- Postman HTML: /home/jc/Documents/ChatBot-Project/Pixel-AI-Creator/test-reports/postman-report-20250911_165710.html
+- Postman JSON: /home/jc/Documents/ChatBot-Project/Pixel-AI-Creator/test-reports/postman-results-20250911_165710.json
+
+Docker Services:
+     Name                   Command                   State                             Ports                      
+-------------------------------------------------------------------------------------------------------------------
+pixel-api        /entrypoint.sh start             Up (healthy)     0.0.0.0:8002->8000/tcp,:::8002->8000/tcp        
+pixel-chromadb   /docker_entrypoint.sh --wo ...   Up (unhealthy)   0.0.0.0:8003->8000/tcp,:::8003->8000/tcp        
+pixel-frontend   /docker-entrypoint.sh ngin ...   Up               0.0.0.0:3002->3000/tcp,:::3002->3000/tcp, 80/tcp
+pixel-postgres   docker-entrypoint.sh postgres    Up               0.0.0.0:5433->5432/tcp,:::5433->5432/tcp        
+pixel-redis      docker-entrypoint.sh redis ...   Up               0.0.0.0:6380->6379/tcp,:::6380->6379/tcp        
+
+System Information:
+- OS: Linux Sandbox-2 6.14.0-29-generic #29~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Aug 14 16:52:50 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+- Node.js: v18.20.8
+- npm: 10.8.2
+- Docker: Docker version 28.4.0, build d8eb465
+- Docker Compose: docker-compose version 1.29.2, build unknown

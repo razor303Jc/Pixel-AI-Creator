@@ -42,6 +42,25 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+// Interface definitions for form data
+interface ClientFormData {
+  name?: string;
+  email?: string;
+  company?: string;
+  description?: string;
+}
+
+interface ChatbotFormData {
+  name?: string;
+  description?: string;
+  type?: string;
+  prompt?: string;
+  personality?: string;
+  client_id?: string;
+}
+
+type FormData = ClientFormData | ChatbotFormData;
+
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const {
@@ -69,7 +88,7 @@ const Dashboard = () => {
   const [createType, setCreateType] = useState('client');
   const [selectedItem, setSelectedItem] = useState(null);
   const [showActionModal, setShowActionModal] = useState(false);
-  const [newItemData, setNewItemData] = useState({});
+  const [newItemData, setNewItemData] = useState<ClientFormData | ChatbotFormData>({});
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
@@ -81,7 +100,7 @@ const Dashboard = () => {
   }, [loadClients, loadChatbots, loadConversations]);
 
   // Handle create modal
-  const openCreateModal = (type) => {
+  const openCreateModal = (type: string) => {
     setCreateType(type);
     setNewItemData({});
     setShowCreateModal(true);
@@ -96,18 +115,20 @@ const Dashboard = () => {
     try {
       let result;
       if (createType === 'client') {
+        const clientData = newItemData as ClientFormData;
         result = await createClient({
-          name: newItemData.name,
-          email: newItemData.email,
-          company: newItemData.company,
-          description: newItemData.description,
+          name: clientData.name,
+          email: clientData.email,
+          company: clientData.company,
+          description: clientData.description,
         });
       } else if (createType === 'chatbot') {
+        const chatbotData = newItemData as ChatbotFormData;
         result = await createChatbot({
-          name: newItemData.name,
-          description: newItemData.description,
-          personality: newItemData.personality || 'helpful',
-          client_id: newItemData.client_id ? parseInt(newItemData.client_id) : null,
+          name: chatbotData.name,
+          description: chatbotData.description,
+          personality: chatbotData.personality || 'helpful',
+          client_id: chatbotData.client_id ? parseInt(chatbotData.client_id) : null,
         });
       }
 
@@ -122,7 +143,7 @@ const Dashboard = () => {
   };
 
   // Handle delete
-  const handleDelete = async (item, type) => {
+  const handleDelete = async (item: any, type: string) => {
     if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
       try {
         let result;
@@ -348,7 +369,7 @@ const Dashboard = () => {
                 </Card>
               </Col>
             ) : (
-              clients.map((client) => (
+              clients.map((client: any) => (
                 <Col lg={4} md={6} key={client.id}>
                   <motion.div
                     variants={cardVariants}
@@ -444,7 +465,7 @@ const Dashboard = () => {
                 </Card>
               </Col>
             ) : (
-              chatbots.map((chatbot) => (
+              chatbots.map((chatbot: any) => (
                 <Col lg={4} md={6} key={chatbot.id}>
                   <motion.div
                     variants={cardVariants}
@@ -525,7 +546,7 @@ const Dashboard = () => {
                   <Form.Label>Email</Form.Label>
                   <Form.Control
                     type="email"
-                    value={newItemData.email || ''}
+                    value={(newItemData as ClientFormData).email || ''}
                     onChange={(e) => setNewItemData(prev => ({ ...prev, email: e.target.value }))}
                     placeholder="Enter email address"
                     className="rounded-3"
@@ -535,7 +556,7 @@ const Dashboard = () => {
                   <Form.Label>Company</Form.Label>
                   <Form.Control
                     type="text"
-                    value={newItemData.company || ''}
+                    value={(newItemData as ClientFormData).company || ''}
                     onChange={(e) => setNewItemData(prev => ({ ...prev, company: e.target.value }))}
                     placeholder="Enter company name"
                     className="rounded-3"
@@ -549,7 +570,7 @@ const Dashboard = () => {
                 <Form.Group className="mb-3">
                   <Form.Label>Personality</Form.Label>
                   <Form.Select 
-                    value={newItemData.personality || 'helpful'}
+                    value={(newItemData as ChatbotFormData).personality || 'helpful'}
                     onChange={(e) => setNewItemData(prev => ({ ...prev, personality: e.target.value }))}
                     className="rounded-3"
                   >
@@ -563,12 +584,12 @@ const Dashboard = () => {
                 <Form.Group className="mb-3">
                   <Form.Label>Client (Optional)</Form.Label>
                   <Form.Select 
-                    value={newItemData.client_id || ''}
+                    value={(newItemData as ChatbotFormData).client_id || ''}
                     onChange={(e) => setNewItemData(prev => ({ ...prev, client_id: e.target.value }))}
                     className="rounded-3"
                   >
                     <option value="">Select a client</option>
-                    {clients.map(client => (
+                    {clients.map((client: any) => (
                       <option key={client.id} value={client.id}>{client.name}</option>
                     ))}
                   </Form.Select>
