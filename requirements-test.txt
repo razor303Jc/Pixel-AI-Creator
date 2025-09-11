@@ -1,0 +1,23 @@
+# Testing dependencies
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.0  # For parallel test execution
+httpx>=0.24.0
+pytest-mock>=3.11.0
+factory-boy>=3.3.0  # For test data generation
+faker>=19.0.0  # For generating fake data
+
+# Performance testing
+pytest-benchmark>=4.0.0
+
+# Load testing
+locust>=2.15.0
+
+# Test reporting
+pytest-html>=3.2.0
+allure-pytest>=2.13.0
+
+# Database testing
+pytest-postgresql>=5.0.0
+aiosqlite>=0.19.0  # For SQLite testing database

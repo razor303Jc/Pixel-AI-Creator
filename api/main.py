@@ -9,19 +9,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import our core modules
-from core.config import settings
-from core.database import init_db
-from services.web_analyzer import WebAnalyzer
-from services.ai_generator import AIAssistantGenerator
-from services.client_manager import ClientManager
-from services.razorflow_integration import RazorflowIntegration
-from services.template_manager import TemplateManager
-from models.client import ClientCreate, ClientResponse, ProjectCreate, ProjectResponse
-from routes.embeddings import router as embeddings_router
-from routes.clients import router as clients_router
-from routes.chatbots import router as chatbots_router
-from routes.conversations import router as conversations_router
-from auth.routes import router as auth_router
+from api.core.config import settings
+from api.core.database import init_db
+from api.services.web_analyzer import WebAnalyzer
+from api.services.ai_generator import AIAssistantGenerator
+from api.services.client_manager import ClientManager
+from api.services.razorflow_integration import RazorflowIntegration
+from api.services.template_manager import TemplateManager
+from api.models.client import ClientCreate, ClientResponse, ProjectCreate, ProjectResponse
+from api.routes.embeddings import router as embeddings_router
+from api.routes.clients import router as clients_router
+from api.routes.chatbots import router as chatbots_router
+from api.routes.conversations import router as conversations_router
+from api.auth.routes import router as auth_router
 
 # Initialize FastAPI app
 app = FastAPI(
