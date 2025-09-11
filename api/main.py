@@ -18,6 +18,7 @@ from services.razorflow_integration import RazorflowIntegration
 from services.template_manager import TemplateManager
 from models.client import ClientCreate, ClientResponse, ProjectCreate, ProjectResponse
 from routes.embeddings import router as embeddings_router
+from routes.clients import router as clients_router
 from auth.routes import router as auth_router
 
 # Initialize FastAPI app
@@ -47,6 +48,7 @@ template_manager = TemplateManager()
 
 # Include routers
 app.include_router(embeddings_router)
+app.include_router(clients_router)
 app.include_router(auth_router)
 
 

@@ -68,6 +68,8 @@ class Client(Base):
     phone = Column(String)
     industry = Column(String)
     description = Column(Text)
+    # Client status: active, inactive, suspended, pending
+    status = Column(String, default="active", nullable=False)
 
     # Social media handles
     twitter_handle = Column(String)
@@ -80,7 +82,9 @@ class Client(Base):
 
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
     # Relationships
     projects = relationship("Project", back_populates="client")

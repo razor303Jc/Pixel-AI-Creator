@@ -8,12 +8,12 @@ This module provides:
 - Token refresh functionality
 """
 
-import jwt
+from jose import jwt, JWTError, ExpiredSignatureError
 import bcrypt
 from datetime import datetime, timedelta
 from typing import Dict, Any
 from fastapi import HTTPException, status
-from ..core.config import Settings
+from core.config import Settings
 
 settings = Settings()
 
@@ -71,13 +71,13 @@ class JWTHandler:
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             return payload
-        except jwt.ExpiredSignatureError:
+        except ExpiredSignatureError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token has expired",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        except jwt.JWTError:
+        except JWTError:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",

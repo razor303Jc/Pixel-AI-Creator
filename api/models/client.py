@@ -4,6 +4,7 @@ from datetime import datetime
 
 # ===== CLIENT MODELS =====
 
+
 class ClientCreate(BaseModel):
     name: str
     email: EmailStr
@@ -18,6 +19,26 @@ class ClientCreate(BaseModel):
     instagram_handle: Optional[str] = None
     linkedin_profile: Optional[str] = None
 
+
+class ClientUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    company: Optional[str] = None
+    website: Optional[str] = None
+    phone: Optional[str] = None
+    industry: Optional[str] = None
+    description: Optional[str] = None
+    
+    # Social media handles
+    twitter_handle: Optional[str] = None
+    instagram_handle: Optional[str] = None
+    linkedin_profile: Optional[str] = None
+
+
+class ClientStatus(BaseModel):
+    status: str  # active, inactive, suspended, pending
+
+
 class ClientResponse(BaseModel):
     id: int
     name: str
@@ -27,6 +48,7 @@ class ClientResponse(BaseModel):
     phone: Optional[str] = None
     industry: Optional[str] = None
     description: Optional[str] = None
+    status: str = "active"
     
     # Social media handles
     twitter_handle: Optional[str] = None
@@ -44,7 +66,9 @@ class ClientResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # ===== PROJECT MODELS =====
+
 
 class ProjectCreate(BaseModel):
     client_id: int
@@ -52,6 +76,7 @@ class ProjectCreate(BaseModel):
     description: Optional[str] = None
     assistant_type: str = "chatbot"  # chatbot, voice_assistant, automation_bot
     complexity: str = "basic"        # basic, advanced, enterprise
+
 
 class ProjectResponse(BaseModel):
     id: int
@@ -81,52 +106,59 @@ class ProjectResponse(BaseModel):
     class Config:
         from_attributes = True
 
-# ===== Q&A SESSION MODELS =====
+
+# ===== QA SESSION MODELS =====
+
 
 class QASessionCreate(BaseModel):
     client_id: int
-    session_name: Optional[str] = None
+    project_id: Optional[int] = None
+
 
 class QASessionResponse(BaseModel):
     id: int
     client_id: int
-    session_name: Optional[str] = None
-    status: str
-    questions_answers: List[Dict[str, str]]
-    insights: Optional[Dict[str, Any]] = None
+    project_id: Optional[int] = None
+    
+    # Questions and answers
+    questions: List[str] = []
+    answers: List[str] = []
+    
+    # Session metadata
     created_at: datetime
     completed_at: Optional[datetime] = None
     
     class Config:
         from_attributes = True
 
+
 class QARecord(BaseModel):
-    session_id: int
     question: str
     answer: str
+    confidence: float
+
 
 # ===== ANALYSIS MODELS =====
 
+
 class WebAnalysisRequest(BaseModel):
     url: str
-    client_id: int
+
 
 class SocialMediaAnalysisRequest(BaseModel):
-    platform: str  # twitter, instagram, linkedin
+    platform: str
     handle: str
-    client_id: int
+
 
 class AnalysisResponse(BaseModel):
-    id: int
-    client_id: int
-    url: str
-    analysis_type: str
-    platform: Optional[str] = None
+    # Website analysis
+    content_categories: Optional[Dict[str, Any]] = None
+    color_scheme: Optional[Dict[str, Any]] = None
+    brand_identity: Optional[Dict[str, Any]] = None
     
-    # Analysis results
-    content_summary: Optional[str] = None
-    key_features: Optional[Dict[str, Any]] = None
-    business_insights: Optional[Dict[str, Any]] = None
+    # Social media analysis
+    post_themes: Optional[Dict[str, Any]] = None
+    engagement_patterns: Optional[Dict[str, Any]] = None
     personality_traits: Optional[Dict[str, Any]] = None
     target_audience: Optional[Dict[str, Any]] = None
     
@@ -142,13 +174,16 @@ class AnalysisResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 # ===== AI GENERATION MODELS =====
+
 
 class AIGenerationRequest(BaseModel):
     client_id: int
     assistant_type: str = "chatbot"
     complexity: str = "basic"
     custom_requirements: Optional[str] = None
+
 
 class AIGenerationStatus(BaseModel):
     project_id: int
