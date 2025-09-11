@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: pixel-postgres-test
+    environment:
+      POSTGRES_DB: pixel_ai_test
+      POSTGRES_USER: pixel_user
+      POSTGRES_PASSWORD: pixel_secure_2024
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - pixel-test-network
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: pixel-redis-test
+    volumes:
+      - redis_test_data:/data
+    ports:
+      - "6380:6379"
+    networks:
+      - pixel-test-network
+    restart: unless-stopped
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:latest
+    container_name: pixel-chromadb-test
+    environment:
+      - CHROMA_SERVER_AUTH_CREDENTIALS=pixel-ai-token-2024
+      - CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER=chromadb.auth.token.TokenAuthCredentialsProvider
+    volumes:
+      - chromadb_test_data:/chroma/chroma
+    ports:
+      - "8001:8000"
+    networks:
+      - pixel-test-network
+    restart: unless-stopped
+
+  # API Service
+  api:
+    build: 
+      context: ./api
+      dockerfile: ../docker/api/Dockerfile
+    container_name: pixel-api-test
+    environment:
+      - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai_test
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-test_key}
+      - ENVIRONMENT=testing
+      - SECRET_KEY=${SECRET_KEY:-pixel-ai-secret-key-2024}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./generated-bots:/app/generated-bots
+      - ./templates:/app/templates
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - pixel-test-network
+    restart: unless-stopped
+
+networks:
+  pixel-test-network:
+    driver: bridge
+    name: pixel-test-network
+
+volumes:
+  postgres_test_data:
+    driver: local
+  redis_test_data:
+    driver: local
+  chromadb_test_data:
+    driver: local

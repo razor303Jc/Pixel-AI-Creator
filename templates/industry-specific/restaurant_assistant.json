@@ -1,0 +1,194 @@
+{
+  "template_id": "restaurant_assistant_v1",
+  "name": "Restaurant AI Assistant",
+  "description": "Complete restaurant automation for orders, reservations, and customer service",
+  "category": "industry_specific",
+  "complexity": "intermediate",
+  "estimated_build_time": "3-4 days",
+  "target_industries": ["restaurants", "cafes", "food_delivery", "catering"],
+  
+  "personality": {
+    "tone": "warm_welcoming",
+    "communication_style": "hospitality_focused",
+    "expertise_level": "menu_expert",
+    "brand_voice": "friendly_efficient",
+    "response_length": "concise_appetizing"
+  },
+  
+  "capabilities": {
+    "primary_functions": [
+      "menu_recommendations",
+      "order_taking",
+      "reservation_management",
+      "dietary_accommodations",
+      "delivery_coordination",
+      "customer_feedback"
+    ],
+    "integrations": [
+      "pos_system",
+      "reservation_platform",
+      "delivery_services",
+      "inventory_management",
+      "payment_processing",
+      "loyalty_program"
+    ],
+    "specialized_features": [
+      "allergen_awareness",
+      "wine_pairing",
+      "nutritional_information",
+      "wait_time_estimation",
+      "table_management"
+    ]
+  },
+  
+  "menu_intelligence": {
+    "recommendation_engine": {
+      "dietary_preferences": ["vegetarian", "vegan", "gluten_free", "keto", "paleo"],
+      "allergen_tracking": ["nuts", "dairy", "shellfish", "eggs", "soy", "wheat"],
+      "spice_tolerance": "mild_medium_hot_scale",
+      "portion_guidance": "small_regular_large_sharing"
+    },
+    "dynamic_pricing": {
+      "happy_hour": "time_based_discounts",
+      "inventory_levels": "promote_overstocked_items",
+      "demand_patterns": "peak_hour_optimization"
+    }
+  },
+  
+  "conversation_flows": {
+    "greeting_seating": {
+      "dine_in": {
+        "responses": [
+          "Welcome to [Restaurant Name]! Table for how many?",
+          "Good [morning/afternoon/evening]! Are you dining in or would you like to place a takeout order?",
+          "Hello! I'm your AI host. How can I make your dining experience perfect today?"
+        ],
+        "actions": ["check_table_availability", "estimate_wait_time", "offer_reservation"]
+      },
+      "takeout_delivery": {
+        "responses": [
+          "Hi! Ready to place an order for pickup or delivery?",
+          "Welcome! I can help you order your favorites. Pickup or delivery today?",
+          "Hello! What can I prepare for you - dining in, takeout, or delivery?"
+        ],
+        "actions": ["check_delivery_area", "estimate_prep_time", "start_order_process"]
+      }
+    },
+    
+    "menu_exploration": {
+      "recommendation_questions": [
+        "Any dietary restrictions I should know about?",
+        "Are you in the mood for something light or hearty?",
+        "Any particular flavors you're craving today?",
+        "First time here? I'd love to recommend our favorites!"
+      ],
+      "menu_navigation": {
+        "appetizers": "start_your_meal_right",
+        "mains": "our_signature_dishes",
+        "desserts": "sweet_endings",
+        "beverages": "perfect_pairings",
+        "specials": "chef_recommendations"
+      }
+    },
+    
+    "order_customization": {
+      "modification_handling": {
+        "cooking_preferences": ["rare", "medium_rare", "medium", "well_done"],
+        "spice_levels": ["mild", "medium", "hot", "extra_hot"],
+        "substitutions": "check_kitchen_availability",
+        "add_ons": "suggest_complementary_items"
+      },
+      "portion_sizing": {
+        "appetite_assessment": "light_regular_hearty",
+        "sharing_suggestions": "family_style_options",
+        "combo_deals": "value_meal_promotions"
+      }
+    },
+    
+    "reservation_management": {
+      "availability_check": {
+        "preferred_time": "suggest_available_slots",
+        "party_size": "table_capacity_matching",
+        "special_occasions": "note_celebrations",
+        "seating_preferences": "indoor_outdoor_booth_table"
+      },
+      "confirmation_process": {
+        "contact_info": "phone_email_collection",
+        "confirmation_method": "text_email_call",
+        "reminder_service": "automated_24hr_reminder"
+      }
+    }
+  },
+  
+  "operational_integration": {
+    "kitchen_coordination": {
+      "order_timing": "coordinate_multiple_dishes",
+      "ingredient_availability": "real_time_inventory_check",
+      "prep_time_estimation": "accurate_pickup_times",
+      "special_requests": "kitchen_communication"
+    },
+    "payment_processing": {
+      "payment_methods": ["card", "cash", "mobile_pay", "gift_cards"],
+      "split_bills": "party_payment_division",
+      "loyalty_points": "automatic_redemption_earning",
+      "tipping_suggestions": "service_based_recommendations"
+    }
+  },
+  
+  "customer_experience": {
+    "wait_management": {
+      "wait_time_updates": "real_time_notifications",
+      "entertainment": "menu_browsing_trivia",
+      "queue_position": "transparent_waiting_system"
+    },
+    "feedback_collection": {
+      "meal_satisfaction": "real_time_check_ins",
+      "service_rating": "staff_performance_tracking",
+      "improvement_suggestions": "operational_insights"
+    }
+  },
+  
+  "business_analytics": {
+    "sales_optimization": {
+      "popular_items": "identify_bestsellers",
+      "slow_movers": "promotional_opportunities",
+      "profit_margins": "suggest_high_margin_items",
+      "seasonal_trends": "menu_planning_insights"
+    },
+    "customer_insights": {
+      "ordering_patterns": "personalization_opportunities",
+      "peak_hours": "staffing_optimization",
+      "customer_lifetime_value": "loyalty_program_effectiveness"
+    }
+  },
+  
+  "performance_metrics": {
+    "order_accuracy": "> 98%",
+    "order_completion_time": "< 30 seconds",
+    "customer_satisfaction": "> 4.7/5",
+    "reservation_no_shows": "< 5%",
+    "upsell_success_rate": "> 25%"
+  },
+  
+  "deployment_config": {
+    "container_requirements": {
+      "cpu": "2 cores",
+      "memory": "4GB",
+      "storage": "25GB"
+    },
+    "scaling_rules": {
+      "peak_hours": "auto_scale_lunch_dinner",
+      "seasonal_events": "holiday_traffic_handling",
+      "concurrent_orders": "max_50_simultaneous"
+    }
+  },
+  
+  "pricing_model": {
+    "base_price": 4500,
+    "setup_fee": 800,
+    "monthly_maintenance": 350,
+    "per_location": 200,
+    "pos_integration": 500,
+    "delivery_platform_sync": 300
+  }
+}

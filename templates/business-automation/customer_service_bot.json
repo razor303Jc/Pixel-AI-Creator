@@ -1,0 +1,151 @@
+{
+  "template_id": "customer_service_bot_v1",
+  "name": "Customer Service Assistant",
+  "description": "24/7 automated customer support with intelligent ticket routing",
+  "category": "business_automation",
+  "complexity": "intermediate",
+  "estimated_build_time": "2-3 days",
+  "target_industries": ["retail", "saas", "e-commerce", "services"],
+  
+  "personality": {
+    "tone": "professional_friendly",
+    "communication_style": "helpful_patient",
+    "expertise_level": "knowledgeable_supportive",
+    "brand_voice": "trustworthy_efficient",
+    "response_length": "concise_complete"
+  },
+  
+  "capabilities": {
+    "primary_functions": [
+      "answer_common_questions",
+      "ticket_creation_routing",
+      "order_status_lookup",
+      "basic_troubleshooting",
+      "escalation_management"
+    ],
+    "integrations": [
+      "crm_systems",
+      "help_desk_software",
+      "knowledge_base",
+      "order_management",
+      "live_chat_handoff"
+    ],
+    "supported_channels": ["web_chat", "email", "social_media", "sms"]
+  },
+  
+  "conversation_flows": {
+    "greeting": {
+      "intent": "welcome_user",
+      "responses": [
+        "Hello! I'm your AI customer service assistant. How can I help you today?",
+        "Hi there! I'm here to help with any questions or issues you might have.",
+        "Welcome! I'm ready to assist you with your inquiries."
+      ],
+      "next_actions": ["identify_issue_type", "collect_user_info"]
+    },
+    
+    "issue_identification": {
+      "intent": "categorize_request",
+      "categories": {
+        "technical_support": {
+          "keywords": ["not working", "error", "bug", "broken", "fix"],
+          "flow": "technical_troubleshooting"
+        },
+        "billing_inquiry": {
+          "keywords": ["payment", "charge", "bill", "invoice", "refund"],
+          "flow": "billing_support"
+        },
+        "product_information": {
+          "keywords": ["how to", "features", "pricing", "plans"],
+          "flow": "product_guidance"
+        },
+        "order_status": {
+          "keywords": ["order", "shipping", "delivery", "tracking"],
+          "flow": "order_lookup"
+        }
+      }
+    },
+    
+    "technical_troubleshooting": {
+      "steps": [
+        "collect_error_details",
+        "suggest_common_solutions",
+        "escalate_if_unresolved"
+      ],
+      "escalation_triggers": [
+        "multiple_failed_attempts",
+        "complex_technical_issue",
+        "user_frustration_detected"
+      ]
+    },
+    
+    "escalation_management": {
+      "human_handoff": {
+        "conditions": ["high_priority", "technical_complexity", "customer_vip"],
+        "message": "I'm connecting you with a human specialist who can better assist with this issue.",
+        "data_transfer": ["conversation_history", "user_info", "issue_category"]
+      }
+    }
+  },
+  
+  "knowledge_base": {
+    "faq_categories": [
+      "account_management",
+      "product_features", 
+      "troubleshooting",
+      "billing_payment",
+      "shipping_returns"
+    ],
+    "dynamic_learning": true,
+    "update_frequency": "daily",
+    "confidence_threshold": 0.85
+  },
+  
+  "performance_metrics": {
+    "target_response_time": "< 2 seconds",
+    "resolution_rate": "> 80%",
+    "customer_satisfaction": "> 4.5/5",
+    "escalation_rate": "< 15%",
+    "availability": "99.9%"
+  },
+  
+  "deployment_config": {
+    "container_requirements": {
+      "cpu": "1 core",
+      "memory": "2GB",
+      "storage": "10GB"
+    },
+    "scaling_rules": {
+      "min_instances": 1,
+      "max_instances": 10,
+      "scale_trigger": "response_time > 5s"
+    },
+    "monitoring": {
+      "health_checks": ["response_time", "error_rate", "memory_usage"],
+      "alerts": ["high_error_rate", "slow_response", "service_down"]
+    }
+  },
+  
+  "customization_points": {
+    "brand_integration": {
+      "logo_placement": true,
+      "color_scheme": "client_branded",
+      "custom_greetings": true,
+      "company_specific_knowledge": true
+    },
+    "workflow_adaptation": {
+      "custom_escalation_rules": true,
+      "integration_endpoints": "configurable",
+      "business_hours": "client_timezone",
+      "language_localization": true
+    }
+  },
+  
+  "pricing_model": {
+    "base_price": 2500,
+    "setup_fee": 500,
+    "monthly_maintenance": 200,
+    "enterprise_features": 1000,
+    "additional_integrations": 300
+  }
+}

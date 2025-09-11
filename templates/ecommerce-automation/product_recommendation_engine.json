@@ -1,0 +1,205 @@
+{
+  "template_id": "product_recommendation_engine_v1",
+  "name": "AI Shopping Assistant",
+  "description": "Intelligent product recommendation system with personalized shopping experience",
+  "category": "ecommerce_automation",
+  "complexity": "advanced",
+  "estimated_build_time": "4-6 days",
+  "target_industries": ["retail", "fashion", "electronics", "home_goods", "beauty"],
+  
+  "personality": {
+    "tone": "enthusiastic_helpful",
+    "communication_style": "personal_shopper",
+    "expertise_level": "product_expert",
+    "brand_voice": "trendy_knowledgeable",
+    "response_length": "engaging_detailed"
+  },
+  
+  "capabilities": {
+    "primary_functions": [
+      "personalized_recommendations",
+      "product_comparison",
+      "style_matching",
+      "inventory_awareness",
+      "price_optimization",
+      "cross_sell_upsell"
+    ],
+    "ai_features": [
+      "collaborative_filtering",
+      "content_based_filtering",
+      "visual_recognition",
+      "trend_analysis",
+      "behavior_prediction",
+      "dynamic_pricing"
+    ],
+    "integrations": [
+      "product_catalog",
+      "inventory_management",
+      "payment_gateway",
+      "shopping_cart",
+      "customer_profiles",
+      "analytics_platform"
+    ]
+  },
+  
+  "recommendation_engine": {
+    "algorithm_types": {
+      "collaborative_filtering": {
+        "user_based": "find_similar_customers",
+        "item_based": "find_similar_products",
+        "matrix_factorization": "discover_hidden_patterns"
+      },
+      "content_based": {
+        "product_features": "match_specifications",
+        "brand_preference": "identify_brand_loyalty",
+        "category_affinity": "track_category_preferences"
+      },
+      "hybrid_approach": {
+        "weighted_combination": "optimize_recommendation_accuracy",
+        "switching_strategy": "context_dependent_algorithms",
+        "mixed_recommendations": "diverse_suggestion_portfolio"
+      }
+    },
+    
+    "personalization_factors": {
+      "purchase_history": "weight: 0.3",
+      "browsing_behavior": "weight: 0.25",
+      "demographic_data": "weight: 0.15",
+      "seasonal_trends": "weight: 0.15",
+      "social_signals": "weight: 0.1",
+      "real_time_context": "weight: 0.05"
+    }
+  },
+  
+  "conversation_flows": {
+    "product_discovery": {
+      "intent": "help_find_products",
+      "approaches": {
+        "category_browsing": {
+          "questions": ["What type of product are you looking for?", "Any specific brand preferences?"],
+          "actions": ["show_category_grid", "filter_by_preferences"]
+        },
+        "style_quiz": {
+          "questions": ["Describe your style in 3 words", "Show me something you love"],
+          "actions": ["analyze_style_profile", "generate_mood_board"]
+        },
+        "occasion_based": {
+          "questions": ["What's the occasion?", "Who is this for?"],
+          "actions": ["curate_occasion_collection", "suggest_complete_looks"]
+        }
+      }
+    },
+    
+    "product_consultation": {
+      "comparison_assistance": {
+        "features": "side_by_side_comparison",
+        "reviews": "aggregate_customer_feedback",
+        "pricing": "value_analysis",
+        "availability": "stock_status_alternatives"
+      },
+      "sizing_guidance": {
+        "size_charts": "interactive_size_guide",
+        "fit_recommendations": "based_on_previous_purchases",
+        "return_policy": "hassle_free_exchanges"
+      }
+    },
+    
+    "purchase_optimization": {
+      "cart_abandonment": {
+        "triggers": ["item_sitting_in_cart", "price_sensitivity", "shipping_concerns"],
+        "interventions": ["limited_time_discount", "free_shipping_offer", "payment_plan_options"]
+      },
+      "upsell_crosssell": {
+        "complementary_products": "frequently_bought_together",
+        "premium_upgrades": "better_version_suggestions",
+        "bundle_deals": "package_discounts"
+      }
+    }
+  },
+  
+  "visual_ai_features": {
+    "image_recognition": {
+      "product_tagging": "automatic_attribute_extraction",
+      "style_analysis": "fashion_trend_identification",
+      "color_matching": "palette_based_recommendations"
+    },
+    "visual_search": {
+      "upload_image": "find_similar_products",
+      "screenshot_shopping": "identify_products_in_images",
+      "style_inspiration": "recreate_looks_with_available_products"
+    }
+  },
+  
+  "performance_optimization": {
+    "real_time_processing": {
+      "response_time": "< 300ms",
+      "recommendation_refresh": "every_interaction",
+      "inventory_sync": "real_time_updates"
+    },
+    "learning_mechanisms": {
+      "click_tracking": "improve_recommendation_relevance",
+      "purchase_feedback": "reinforce_successful_patterns",
+      "explicit_feedback": "incorporate_user_ratings"
+    }
+  },
+  
+  "business_metrics": {
+    "conversion_optimization": {
+      "click_through_rate": "> 8%",
+      "conversion_rate_lift": "> 25%",
+      "average_order_value": "+35%",
+      "customer_lifetime_value": "+40%"
+    },
+    "engagement_metrics": {
+      "session_duration": "+50%",
+      "pages_per_session": "+60%",
+      "return_visitor_rate": "+45%",
+      "recommendation_acceptance": "> 30%"
+    }
+  },
+  
+  "deployment_config": {
+    "container_requirements": {
+      "cpu": "4 cores",
+      "memory": "8GB",
+      "storage": "50GB",
+      "gpu": "optional_for_visual_ai"
+    },
+    "scaling_rules": {
+      "min_instances": 3,
+      "max_instances": 50,
+      "scale_trigger": "concurrent_users > 100"
+    },
+    "caching_strategy": {
+      "product_recommendations": "redis_cache_30min",
+      "user_profiles": "memory_cache_session",
+      "inventory_data": "real_time_no_cache"
+    }
+  },
+  
+  "integration_requirements": {
+    "ecommerce_platforms": [
+      "shopify",
+      "woocommerce", 
+      "magento",
+      "bigcommerce",
+      "custom_api"
+    ],
+    "data_sources": [
+      "product_catalog_api",
+      "inventory_management_system",
+      "customer_data_platform",
+      "analytics_platform",
+      "review_systems"
+    ]
+  },
+  
+  "pricing_model": {
+    "base_price": 9500,
+    "setup_fee": 2000,
+    "monthly_maintenance": 750,
+    "transaction_fee": 0.002,
+    "enterprise_features": 5000,
+    "visual_ai_addon": 2500
+  }
+}

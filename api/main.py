@@ -20,6 +20,7 @@ from models.client import ClientCreate, ClientResponse, ProjectCreate, ProjectRe
 from routes.embeddings import router as embeddings_router
 from routes.clients import router as clients_router
 from routes.chatbots import router as chatbots_router
+from routes.conversations import router as conversations_router
 from auth.routes import router as auth_router
 
 # Initialize FastAPI app
@@ -51,6 +52,7 @@ template_manager = TemplateManager()
 app.include_router(embeddings_router)
 app.include_router(clients_router)
 app.include_router(chatbots_router)
+app.include_router(conversations_router)
 app.include_router(auth_router)
 
 

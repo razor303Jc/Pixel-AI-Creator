@@ -1,0 +1,245 @@
+{
+  "template_id": "social_media_manager_v1",
+  "name": "AI Social Media Manager",
+  "description": "Automated social media content creation, scheduling, and engagement management",
+  "category": "content_marketing",
+  "complexity": "advanced",
+  "estimated_build_time": "4-6 days",
+  "target_industries": ["marketing", "e-commerce", "restaurants", "retail", "services"],
+  
+  "personality": {
+    "tone": "engaging_creative",
+    "communication_style": "social_media_savvy",
+    "expertise_level": "marketing_expert",
+    "brand_voice": "trendy_authentic",
+    "response_length": "platform_optimized"
+  },
+  
+  "capabilities": {
+    "primary_functions": [
+      "content_generation",
+      "post_scheduling",
+      "engagement_automation",
+      "hashtag_optimization",
+      "performance_analytics",
+      "trend_monitoring"
+    ],
+    "content_types": [
+      "social_posts",
+      "stories",
+      "reels_videos",
+      "carousels",
+      "live_captions",
+      "promotional_content"
+    ],
+    "platform_support": [
+      "instagram",
+      "facebook", 
+      "twitter_x",
+      "linkedin",
+      "tiktok",
+      "youtube_shorts"
+    ]
+  },
+  
+  "content_generation": {
+    "ai_writing": {
+      "post_types": {
+        "educational": "tips_tutorials_how_to",
+        "promotional": "product_service_announcements",
+        "entertaining": "memes_jokes_trending_content",
+        "inspirational": "quotes_success_stories",
+        "behind_scenes": "company_culture_process"
+      },
+      "tone_adaptation": {
+        "brand_voice": "consistent_personality_matching",
+        "platform_specific": "optimize_for_each_channel",
+        "audience_targeting": "demographic_based_messaging"
+      }
+    },
+    
+    "visual_content": {
+      "image_generation": "ai_powered_branded_visuals",
+      "template_system": "customizable_design_templates",
+      "brand_consistency": "logo_color_font_enforcement",
+      "a_b_testing": "visual_performance_optimization"
+    },
+    
+    "hashtag_strategy": {
+      "research": "trending_relevant_hashtag_discovery",
+      "optimization": "reach_engagement_maximization",
+      "tracking": "hashtag_performance_analytics",
+      "automation": "smart_hashtag_suggestions"
+    }
+  },
+  
+  "scheduling_automation": {
+    "optimal_timing": {
+      "audience_analysis": "when_followers_most_active",
+      "platform_insights": "best_posting_times_by_platform",
+      "content_type_optimization": "timing_for_different_content",
+      "timezone_management": "global_audience_consideration"
+    },
+    
+    "content_calendar": {
+      "planning": "monthly_weekly_daily_scheduling",
+      "themes": "consistent_content_themes",
+      "campaigns": "coordinated_multi_post_campaigns",
+      "seasonal": "holiday_event_tied_content"
+    },
+    
+    "posting_automation": {
+      "multi_platform": "simultaneous_cross_posting",
+      "customization": "platform_specific_adaptations",
+      "approval_workflow": "content_review_before_posting",
+      "backup_content": "fill_gaps_maintain_consistency"
+    }
+  },
+  
+  "engagement_management": {
+    "automated_responses": {
+      "comment_replies": "intelligent_contextual_responses",
+      "dm_management": "customer_service_lead_capture",
+      "mention_monitoring": "brand_mention_engagement",
+      "crisis_detection": "negative_sentiment_alerts"
+    },
+    
+    "community_building": {
+      "follower_interaction": "proactive_engagement_strategies",
+      "user_generated_content": "encourage_share_user_posts",
+      "influencer_outreach": "identify_collaborate_micro_influencers",
+      "loyalty_programs": "social_media_based_rewards"
+    }
+  },
+  
+  "analytics_optimization": {
+    "performance_tracking": {
+      "engagement_metrics": "likes_comments_shares_saves",
+      "reach_impressions": "organic_paid_performance",
+      "follower_growth": "acquisition_retention_analysis",
+      "conversion_tracking": "social_to_website_sales"
+    },
+    
+    "content_optimization": {
+      "a_b_testing": "post_formats_timing_messaging",
+      "trend_analysis": "identify_successful_content_patterns",
+      "competitor_benchmarking": "industry_performance_comparison",
+      "roi_measurement": "social_media_business_impact"
+    }
+  },
+  
+  "conversation_flows": {
+    "content_planning": {
+      "intent": "plan_social_content",
+      "questions": [
+        "What's your primary business goal for social media?",
+        "Who is your target audience?",
+        "What type of content resonates with your brand?",
+        "Which platforms should we focus on?"
+      ],
+      "outputs": ["content_strategy", "posting_schedule", "platform_priorities"]
+    },
+    
+    "engagement_handling": {
+      "customer_service": {
+        "response_types": ["product_questions", "service_inquiries", "complaints", "compliments"],
+        "escalation_rules": "when_to_involve_humans",
+        "tone_matching": "brand_voice_consistency"
+      },
+      "lead_generation": {
+        "capture_methods": ["dm_responses", "comment_engagement", "story_interactions"],
+        "qualification": "identify_potential_customers",
+        "handoff": "transfer_to_sales_team"
+      }
+    },
+    
+    "crisis_management": {
+      "detection": {
+        "sentiment_monitoring": "negative_feedback_alerts",
+        "volume_spikes": "unusual_activity_detection",
+        "keyword_tracking": "brand_reputation_monitoring"
+      },
+      "response_protocol": {
+        "immediate_actions": "acknowledge_apologize_investigate",
+        "escalation_process": "involve_management_legal_pr",
+        "follow_up": "resolution_communication"
+      }
+    }
+  },
+  
+  "platform_specific_features": {
+    "instagram": {
+      "stories": "interactive_polls_questions_stickers",
+      "reels": "trending_audio_hashtag_optimization",
+      "shopping": "product_tagging_sales_integration",
+      "live": "scheduled_live_sessions"
+    },
+    "facebook": {
+      "events": "event_creation_promotion",
+      "groups": "community_management",
+      "ads": "organic_paid_coordination",
+      "messenger": "automated_customer_service"
+    },
+    "linkedin": {
+      "professional_content": "industry_insights_thought_leadership",
+      "company_updates": "business_news_announcements",
+      "networking": "connection_building_strategies",
+      "employee_advocacy": "team_member_content_sharing"
+    }
+  },
+  
+  "integration_capabilities": {
+    "crm_systems": {
+      "lead_sync": "social_leads_to_crm",
+      "customer_data": "social_profile_enrichment",
+      "campaign_tracking": "social_attribution"
+    },
+    "e_commerce": {
+      "product_catalog": "automated_product_posts",
+      "inventory_sync": "promote_available_products",
+      "sales_tracking": "social_commerce_analytics"
+    },
+    "email_marketing": {
+      "list_building": "social_to_email_conversion",
+      "cross_promotion": "email_social_coordination",
+      "segmentation": "social_behavior_based_segments"
+    }
+  },
+  
+  "performance_metrics": {
+    "content_generation_speed": "< 30 seconds per post",
+    "engagement_rate_improvement": "> 40%",
+    "follower_growth_rate": "> 25% monthly",
+    "response_time": "< 5 minutes during business hours",
+    "content_approval_rate": "> 90%"
+  },
+  
+  "deployment_config": {
+    "container_requirements": {
+      "cpu": "4 cores",
+      "memory": "8GB",
+      "storage": "100GB",
+      "gpu": "recommended_for_image_generation"
+    },
+    "scaling_rules": {
+      "min_instances": 2,
+      "max_instances": 20,
+      "scale_trigger": "posts_per_hour > 50"
+    },
+    "external_apis": {
+      "social_platforms": "oauth_api_access",
+      "image_generation": "dalle_midjourney_stable_diffusion",
+      "analytics": "platform_native_third_party"
+    }
+  },
+  
+  "pricing_model": {
+    "base_price": 8500,
+    "setup_fee": 1500,
+    "monthly_maintenance": 650,
+    "per_platform": 150,
+    "ai_image_generation": 500,
+    "advanced_analytics": 400,
+    "enterprise_features": 2000
+  }
+}

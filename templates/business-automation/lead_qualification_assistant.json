@@ -1,0 +1,189 @@
+{
+  "template_id": "lead_qualification_assistant_v1",
+  "name": "Lead Qualification Assistant",
+  "description": "AI-powered pre-sales assistant that qualifies leads and schedules demos",
+  "category": "business_automation",
+  "complexity": "advanced",
+  "estimated_build_time": "3-5 days",
+  "target_industries": ["b2b_saas", "consulting", "real_estate", "financial_services"],
+  
+  "personality": {
+    "tone": "professional_consultative",
+    "communication_style": "strategic_questioning",
+    "expertise_level": "sales_expert",
+    "brand_voice": "confident_trustworthy",
+    "response_length": "detailed_strategic"
+  },
+  
+  "capabilities": {
+    "primary_functions": [
+      "lead_intake_qualification",
+      "budget_timeline_discovery",
+      "pain_point_identification",
+      "solution_matching",
+      "demo_scheduling",
+      "crm_integration"
+    ],
+    "integrations": [
+      "salesforce_hubspot",
+      "calendar_systems",
+      "email_automation",
+      "meeting_platforms",
+      "lead_scoring_systems"
+    ],
+    "ai_features": [
+      "sentiment_analysis",
+      "lead_scoring_algorithm",
+      "conversation_intelligence",
+      "predictive_qualification"
+    ]
+  },
+  
+  "qualification_framework": {
+    "bant_criteria": {
+      "budget": {
+        "questions": [
+          "What's your approximate budget range for this type of solution?",
+          "Have you allocated budget for this initiative this year?",
+          "Who controls the budget decision for this project?"
+        ],
+        "scoring": {"high": 25, "medium": 15, "low": 5}
+      },
+      "authority": {
+        "questions": [
+          "Who else would be involved in this decision?",
+          "Are you the primary decision maker for this purchase?",
+          "What's your role in the evaluation process?"
+        ],
+        "scoring": {"high": 25, "medium": 15, "low": 5}
+      },
+      "need": {
+        "questions": [
+          "What challenges are you trying to solve?",
+          "How are you currently handling this process?",
+          "What would success look like for you?"
+        ],
+        "scoring": {"high": 25, "medium": 15, "low": 5}
+      },
+      "timeline": {
+        "questions": [
+          "When would you like to have a solution in place?",
+          "What's driving the urgency for this project?",
+          "Are there any critical deadlines we should know about?"
+        ],
+        "scoring": {"high": 25, "medium": 15, "low": 5}
+      }
+    },
+    "lead_scoring": {
+      "hot_lead": "score >= 80",
+      "warm_lead": "score >= 60",
+      "cold_lead": "score < 60",
+      "disqualified": "budget_mismatch || no_authority || no_timeline"
+    }
+  },
+  
+  "conversation_flows": {
+    "initial_engagement": {
+      "intent": "welcome_qualify",
+      "responses": [
+        "Hi! I'm here to learn about your business needs and see how we can help. Could you tell me a bit about your company?",
+        "Welcome! I'd love to understand your current challenges and explore potential solutions together.",
+        "Hello! I'm your sales assistant. Let's discuss how our solutions might fit your business goals."
+      ],
+      "data_collection": ["company_size", "industry", "role", "initial_interest"]
+    },
+    
+    "needs_discovery": {
+      "pain_point_exploration": {
+        "current_state_questions": [
+          "How are you currently handling [specific process]?",
+          "What's working well with your current approach?",
+          "Where do you see the biggest gaps or inefficiencies?"
+        ],
+        "impact_questions": [
+          "How much time does your team spend on this each week?",
+          "What's the cost of not solving this problem?",
+          "How would solving this impact your business goals?"
+        ]
+      },
+      "solution_fit_assessment": {
+        "feature_matching": "match_client_needs_to_product_features",
+        "value_proposition": "calculate_roi_business_impact",
+        "competitive_analysis": "position_against_alternatives"
+      }
+    },
+    
+    "objection_handling": {
+      "common_objections": {
+        "price_concern": {
+          "response": "I understand budget is important. Let's focus on the value and ROI first - what would achieving [their goal] be worth to your business?",
+          "follow_up": "show_roi_calculator"
+        },
+        "timing_issues": {
+          "response": "Timing is crucial. What would need to happen for this to become a priority?",
+          "follow_up": "identify_timeline_drivers"
+        },
+        "existing_solution": {
+          "response": "That's great you have something in place. What's working well, and where do you see room for improvement?",
+          "follow_up": "gap_analysis"
+        }
+      }
+    },
+    
+    "closing_scheduling": {
+      "qualified_leads": {
+        "demo_scheduling": "integrate_with_calendar_system",
+        "stakeholder_inclusion": "identify_additional_attendees",
+        "preparation_materials": "send_relevant_case_studies"
+      },
+      "follow_up_sequence": {
+        "immediate": "confirmation_email_calendar_invite",
+        "pre_demo": "preparation_materials_agenda",
+        "post_demo": "recap_next_steps"
+      }
+    }
+  },
+  
+  "integration_capabilities": {
+    "crm_sync": {
+      "lead_data_transfer": "automatic",
+      "activity_logging": "real_time",
+      "lead_scoring_updates": "continuous",
+      "pipeline_stage_progression": "rule_based"
+    },
+    "marketing_automation": {
+      "lead_nurturing": "trigger_based_sequences",
+      "content_personalization": "behavioral_dynamic",
+      "lead_routing": "intelligent_assignment"
+    }
+  },
+  
+  "performance_metrics": {
+    "qualification_accuracy": "> 90%",
+    "lead_to_demo_conversion": "> 40%",
+    "demo_to_opportunity": "> 60%",
+    "average_qualification_time": "< 15 minutes",
+    "sales_team_satisfaction": "> 4.8/5"
+  },
+  
+  "deployment_config": {
+    "container_requirements": {
+      "cpu": "2 cores",
+      "memory": "4GB",
+      "storage": "20GB"
+    },
+    "scaling_rules": {
+      "min_instances": 2,
+      "max_instances": 20,
+      "scale_trigger": "concurrent_conversations > 50"
+    }
+  },
+  
+  "pricing_model": {
+    "base_price": 7500,
+    "setup_fee": 1500,
+    "monthly_maintenance": 500,
+    "per_qualified_lead": 50,
+    "enterprise_features": 2500
+  }
+}

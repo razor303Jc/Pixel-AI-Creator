@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from core.config import settings
+from api.core.config import settings
 
 # Create async engine
 engine = create_async_engine(
@@ -82,9 +82,7 @@ class Client(Base):
 
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
-    )
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
     projects = relationship("Project", back_populates="client")
@@ -174,6 +172,44 @@ class WebAnalysis(Base):
     # Metadata
     analyzed_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String, default="completed")
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    # Conversation details
+    title = Column(String, nullable=False)
+    status = Column(String, default="active")  # active, archived, closed
+    extra_data = Column(JSON, default=dict)
+
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Relationships
+    messages = relationship("Message", back_populates="conversation")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False)
+
+    # Message details
+    content = Column(Text, nullable=False)
+    role = Column(String, nullable=False)  # user, assistant, system
+    extra_data = Column(JSON, default=dict)
+
+    # Timestamp
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    conversation = relationship("Conversation", back_populates="messages")
 
 
 # ===== DATABASE INITIALIZATION =====

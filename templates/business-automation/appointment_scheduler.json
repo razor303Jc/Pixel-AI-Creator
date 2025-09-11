@@ -1,0 +1,213 @@
+{
+  "template_id": "appointment_scheduler_v1",
+  "name": "Smart Appointment Scheduler",
+  "description": "AI-powered scheduling assistant with calendar integration and automated reminders",
+  "category": "business_automation",
+  "complexity": "intermediate",
+  "estimated_build_time": "2-3 days",
+  "target_industries": ["healthcare", "professional_services", "beauty", "consulting", "legal"],
+  
+  "personality": {
+    "tone": "professional_efficient",
+    "communication_style": "organized_helpful",
+    "expertise_level": "scheduling_expert",
+    "brand_voice": "reliable_courteous",
+    "response_length": "clear_concise"
+  },
+  
+  "capabilities": {
+    "primary_functions": [
+      "appointment_booking",
+      "calendar_management",
+      "availability_checking",
+      "automatic_reminders",
+      "rescheduling_cancellation",
+      "resource_coordination"
+    ],
+    "integrations": [
+      "google_calendar",
+      "outlook_calendar",
+      "zoom_teams",
+      "payment_processing",
+      "email_sms_notifications",
+      "crm_systems"
+    ],
+    "smart_features": [
+      "conflict_detection",
+      "optimal_scheduling",
+      "buffer_time_management",
+      "recurring_appointments",
+      "waitlist_management"
+    ]
+  },
+  
+  "scheduling_logic": {
+    "availability_rules": {
+      "business_hours": "configurable_timezone_aware",
+      "break_times": "automatic_buffer_insertion",
+      "blocked_periods": "vacation_holiday_management",
+      "resource_constraints": "room_staff_equipment_booking"
+    },
+    "appointment_types": {
+      "consultation": {"duration": 30, "buffer": 15, "prep_time": 5},
+      "standard_appointment": {"duration": 60, "buffer": 10, "prep_time": 10},
+      "extended_session": {"duration": 120, "buffer": 20, "prep_time": 15},
+      "emergency_slot": {"duration": 15, "buffer": 5, "priority": "high"}
+    },
+    "optimization": {
+      "travel_time": "location_based_scheduling",
+      "efficiency": "minimize_gaps_maximize_utilization",
+      "preferences": "client_provider_preferences"
+    }
+  },
+  
+  "conversation_flows": {
+    "appointment_booking": {
+      "intent": "schedule_appointment",
+      "steps": [
+        "service_selection",
+        "provider_preference",
+        "date_time_preference",
+        "availability_check",
+        "confirmation",
+        "payment_processing"
+      ],
+      "questions": [
+        "What type of appointment would you like to schedule?",
+        "Do you have a preferred date and time?",
+        "Would you like to see any specific provider?",
+        "How would you like to receive confirmation and reminders?"
+      ]
+    },
+    
+    "availability_inquiry": {
+      "intent": "check_availability", 
+      "responses": [
+        "I can check availability for you. What type of appointment?",
+        "Let me see what slots are available. Any preferred times?",
+        "I'll check the schedule. Which service are you interested in?"
+      ],
+      "actions": ["query_calendar", "suggest_alternatives", "offer_waitlist"]
+    },
+    
+    "modification_requests": {
+      "reschedule": {
+        "process": ["verify_appointment", "check_new_availability", "update_calendar", "send_confirmation"],
+        "policies": ["24_hour_notice", "reschedule_limits", "fee_structures"]
+      },
+      "cancellation": {
+        "process": ["verify_appointment", "apply_cancellation_policy", "update_calendar", "notify_relevant_parties"],
+        "refund_logic": "time_based_refund_schedule"
+      }
+    },
+    
+    "reminder_system": {
+      "schedule": {
+        "confirmation": "immediate_after_booking",
+        "reminder_1": "24_hours_before",
+        "reminder_2": "2_hours_before",
+        "followup": "24_hours_after"
+      },
+      "channels": ["email", "sms", "push_notification", "phone_call"],
+      "personalization": "client_preference_based"
+    }
+  },
+  
+  "calendar_integration": {
+    "providers": {
+      "google_calendar": {
+        "features": ["two_way_sync", "conflict_detection", "event_creation"],
+        "permissions": ["read_write_calendar", "send_invitations"]
+      },
+      "outlook": {
+        "features": ["exchange_sync", "room_booking", "attendee_management"],
+        "permissions": ["calendar_access", "meeting_creation"]
+      },
+      "custom_calendar": {
+        "api_endpoints": ["availability", "booking", "modification"],
+        "webhook_support": "real_time_updates"
+      }
+    },
+    "synchronization": {
+      "frequency": "real_time",
+      "conflict_resolution": "provider_priority_rules",
+      "backup_strategy": "local_cache_with_sync"
+    }
+  },
+  
+  "payment_integration": {
+    "deposit_handling": {
+      "required_services": "configurable_by_appointment_type",
+      "amount_rules": "percentage_or_fixed_amount",
+      "refund_policies": "time_based_automated"
+    },
+    "payment_methods": ["credit_card", "paypal", "apple_pay", "google_pay"],
+    "processing": {
+      "timing": "at_booking_or_after_service",
+      "automation": "reduce_no_shows",
+      "invoicing": "automatic_receipt_generation"
+    }
+  },
+  
+  "business_intelligence": {
+    "analytics": {
+      "booking_patterns": "identify_peak_demand_periods",
+      "no_show_tracking": "predict_optimize_scheduling",
+      "revenue_optimization": "pricing_availability_strategies",
+      "client_behavior": "retention_satisfaction_metrics"
+    },
+    "reporting": {
+      "utilization_rates": "provider_resource_efficiency",
+      "revenue_tracking": "service_profitability",
+      "client_insights": "preferences_loyalty_analysis"
+    }
+  },
+  
+  "performance_metrics": {
+    "booking_success_rate": "> 95%",
+    "average_booking_time": "< 3 minutes",
+    "no_show_reduction": "> 40%",
+    "client_satisfaction": "> 4.8/5",
+    "calendar_sync_accuracy": "99.9%"
+  },
+  
+  "deployment_config": {
+    "container_requirements": {
+      "cpu": "1 core",
+      "memory": "2GB",
+      "storage": "15GB"
+    },
+    "scaling_rules": {
+      "min_instances": 1,
+      "max_instances": 5,
+      "scale_trigger": "concurrent_bookings > 20"
+    },
+    "monitoring": {
+      "calendar_sync_health": "real_time_monitoring",
+      "booking_completion_rate": "hourly_tracking",
+      "integration_status": "continuous_health_checks"
+    }
+  },
+  
+  "customization_points": {
+    "business_rules": {
+      "booking_policies": "fully_configurable",
+      "pricing_structures": "flexible_rate_management",
+      "availability_patterns": "custom_schedule_templates"
+    },
+    "user_experience": {
+      "booking_flow": "customizable_steps",
+      "branding": "white_label_ready",
+      "notifications": "template_customization"
+    }
+  },
+  
+  "pricing_model": {
+    "base_price": 3500,
+    "setup_fee": 750,
+    "monthly_maintenance": 250,
+    "calendar_integrations": 150,
+    "payment_processing": 200,
+    "advanced_analytics": 300
+  }
+}
