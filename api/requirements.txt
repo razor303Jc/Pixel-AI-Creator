@@ -48,6 +48,16 @@ nltk==3.8.1
 
 # Multi-language support (using deep-translator instead of googletrans for better compatibility)
 deep-translator==1.11.4
+
+# Background tasks and caching
+celery[redis]==5.3.4
+kombu==5.3.4
+
+# System monitoring
+psutil==5.9.6
+
+# Email sending
+aiosmtplib==3.0.1
 langdetect==1.0.9
 
 # Monitoring

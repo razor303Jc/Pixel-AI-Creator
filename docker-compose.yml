@@ -40,6 +40,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
       - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - ENVIRONMENT=production
       - SECRET_KEY=${SECRET_KEY:-pixel-ai-secret-key-2024}
@@ -50,6 +52,81 @@ services:
       - ./templates:/app/templates
     depends_on:
       - postgres
+      - redis
+    networks:
+      - pixel-network
+    restart: unless-stopped
+
+  # Celery Worker for Background Tasks
+  celery-worker:
+    build: 
+      context: ./api
+      dockerfile: ../docker/api/Dockerfile
+    container_name: pixel-celery-worker
+    command: celery -A core.celery_app worker --loglevel=info --queues=default,conversations,analytics,notifications,maintenance --concurrency=4
+    environment:
+      - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=production
+      - SECRET_KEY=${SECRET_KEY:-pixel-ai-secret-key-2024}
+      - C_FORCE_ROOT=1
+    volumes:
+      - ./generated-bots:/app/generated-bots
+      - ./templates:/app/templates
+      - celery_logs:/var/log/celery
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - pixel-network
+    restart: unless-stopped
+
+  # Celery Beat Scheduler
+  celery-beat:
+    build: 
+      context: ./api
+      dockerfile: ../docker/api/Dockerfile
+    container_name: pixel-celery-beat
+    command: celery -A core.celery_app beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=production
+      - SECRET_KEY=${SECRET_KEY:-pixel-ai-secret-key-2024}
+      - C_FORCE_ROOT=1
+    volumes:
+      - ./generated-bots:/app/generated-bots
+      - ./templates:/app/templates
+      - celery_logs:/var/log/celery
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - pixel-network
+    restart: unless-stopped
+
+  # Celery Flower Monitoring (Optional)
+  celery-flower:
+    build: 
+      context: ./api
+      dockerfile: ../docker/api/Dockerfile
+    container_name: pixel-celery-flower
+    command: celery -A core.celery_app flower --port=5555
+    environment:
+      - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - C_FORCE_ROOT=1
+    ports:
+      - "5556:5555"
+    depends_on:
       - redis
     networks:
       - pixel-network
@@ -99,6 +176,8 @@ volumes:
   redis_data:
     driver: local
   chromadb_data:
+    driver: local
+  celery_logs:
     driver: local
 
 networks:
