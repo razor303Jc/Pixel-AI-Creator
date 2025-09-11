@@ -60,6 +60,11 @@ app.include_router(chatbots_router, prefix="/api")
 app.include_router(conversations_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 
+# Import and include AI conversation router
+from routes.ai_conversation import router as ai_conversation_router
+
+app.include_router(ai_conversation_router, prefix="/api")
+
 
 @app.on_event("startup")
 async def startup_event():
