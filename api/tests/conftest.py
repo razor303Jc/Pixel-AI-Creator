@@ -1,16 +1,47 @@
 """
-Pytest configuration and fixtures for Pixel AI Creator tests
+Pytest configuration and shared fixtures for Pixel AI Creator testing.
+
+This configuration file provides:
+- Test database setup and teardown
+- Common test fixtures
+- Testing environment configuration
+- Mock services setup
+- Test data factories
 """
 
 import pytest
 import pytest_asyncio
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import asyncio
 import sys
 import os
+import tempfile
+import redis
+from typing import Generator, Dict, Any
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+from fastapi.testclient import TestClient
+from datetime import datetime, timedelta
 
 # Add the parent directory to the Python path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Import application components
+try:
+    from main import app
+    from core.database import get_db, Base
+    from core.auth import get_current_user
+except ImportError:
+    # Handle import errors gracefully for tests
+    app = None
+    get_db = None
+    Base = None
+    get_current_user = None
+
+# Test configuration
+TEST_DATABASE_URL = "sqlite:///./test_comprehensive.db"
+TEST_REDIS_URL = "redis://localhost:6379/15"  # Use separate Redis DB for tests
 
 
 class MockDatabase:

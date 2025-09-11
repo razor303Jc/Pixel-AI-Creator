@@ -456,7 +456,7 @@ Key Implementation Files:
 - [ ] **CI/CD pipeline**
   - GitHub Actions setup
   - Automated testing on pull requests
-  - Deployment automation
+  - Deployment automation, Linode API
 
 **Owner**: QA/DevOps Team  
 **Est. Hours**: 32-36 hours
@@ -466,9 +466,7 @@ Key Implementation Files:
 ### Production Deployment
 
 - [ ] **Production environment setup**
-  - AWS/GCP infrastructure configuration
-  - SSL certificates and domain setup
-  - Load balancer configuration
+  - Traefik reverse proxy & proLoad balancer, ssl
 - [ ] **Monitoring and alerting**
   - Application performance monitoring
   - Error tracking and alerting
