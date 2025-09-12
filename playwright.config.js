@@ -6,7 +6,10 @@ import { defineConfig, devices } from "@playwright/test";
  */
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["**/test_frontend_comprehensive_playwright.spec.js", "**/test_frontend_complete_qa.spec.js"],
+  testMatch: [
+    "**/test_frontend_comprehensive_playwright.spec.js",
+    "**/test_frontend_complete_qa.spec.js",
+  ],
 
   /* Run tests in files in parallel */
   fullyParallel: true,
