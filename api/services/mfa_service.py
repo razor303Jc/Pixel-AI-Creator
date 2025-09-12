@@ -52,13 +52,12 @@ class MFAService:
             try:
                 # Try to decode as base64 first
                 import base64
+
                 key = base64.urlsafe_b64decode(key.encode())
             except Exception:
                 # If that fails, generate a new key
                 key = Fernet.generate_key()
-                logger.warning(
-                    "Invalid MFA encryption key format. Generated new key."
-                )
+                logger.warning("Invalid MFA encryption key format. Generated new key.")
         return key
 
     def _encrypt_data(self, data: str) -> str:
