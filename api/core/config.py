@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -7,8 +8,15 @@ class Settings(BaseSettings):
     # Database
     database_url: str = os.getenv(
         "DATABASE_URL",
-        "postgresql://pixel_user:pixel_secure_2024@localhost:5432/pixel_ai",
+        "postgresql://pixel_user:pixel_secure_2024@localhost:5433/pixel_ai",
     )
+
+    # Individual Database Components (for Database Manager)
+    DATABASE_HOST: str = os.getenv("DATABASE_HOST", "localhost")
+    DATABASE_PORT: int = int(os.getenv("DATABASE_PORT", "5433"))
+    DATABASE_NAME: str = os.getenv("DATABASE_NAME", "pixel_ai")
+    DATABASE_USER: str = os.getenv("DATABASE_USER", "pixel_user")
+    DATABASE_PASSWORD: str = os.getenv("DATABASE_PASSWORD", "pixel_secure_2024")
 
     # Redis
     redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -40,6 +48,16 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Get cached settings instance"""
+    return Settings()
+
+
+# Create global settings instance
+settings = get_settings()
 
 
 settings = Settings()

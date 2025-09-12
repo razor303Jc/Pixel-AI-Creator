@@ -20,9 +20,9 @@ from cryptography.fernet import Fernet
 from sqlalchemy import text
 from pydantic import BaseModel
 
-from ..core.database_manager import get_db_manager
-from ..core.config import settings
-from ..core.logging import get_logger
+from core.database_manager import get_db_manager
+from core.config import settings
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

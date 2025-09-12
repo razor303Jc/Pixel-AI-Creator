@@ -19,10 +19,12 @@ from sqlalchemy import event, text
 from sqlalchemy.engine import Engine
 from pydantic import BaseModel
 
-from ..core.config import settings
-from ..core.logging import get_logger
+try:
+    from core.config import settings
+except ImportError:
+    from api.core.config import settings
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ConnectionStatus(Enum):
@@ -178,7 +180,7 @@ class DatabaseConnectionManager:
         try:
             async with self.engine.begin() as conn:
                 result = await conn.execute(text("SELECT 1"))
-                await result.fetchone()
+                result.fetchone()  # Remove await here
 
             self.connection_stats.status = ConnectionStatus.HEALTHY
             self.connection_stats.last_check = datetime.utcnow()

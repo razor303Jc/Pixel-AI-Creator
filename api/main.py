@@ -28,7 +28,11 @@ from routes.chatbots import router as chatbots_router
 from routes.conversations import router as conversations_router
 from routes.analytics_clean import router as analytics_router
 from routes.language import router as language_router
-from routes.performance import router as performance_router
+
+# from routes.performance import router as performance_router  # Temporarily disabled due to cache issues
+from routes.database_simple import router as database_router
+from routes.sessions import router as sessions_router
+from routes.sessions_test import router as sessions_test_router
 from auth.routes import router as auth_router
 
 # Initialize FastAPI app
@@ -63,7 +67,11 @@ app.include_router(chatbots_router, prefix="/api")
 app.include_router(conversations_router, prefix="/api")
 app.include_router(analytics_router)
 app.include_router(auth_router, prefix="/api")
-app.include_router(performance_router, prefix="/api")
+app.include_router(sessions_router, prefix="/api")
+app.include_router(sessions_test_router, prefix="/api")
+# Temporarily disabled due to cache issues:
+# app.include_router(performance_router, prefix="/api")
+app.include_router(database_router, prefix="/api/database")
 
 # Import and include AI conversation router
 from routes.ai_conversation import router as ai_conversation_router

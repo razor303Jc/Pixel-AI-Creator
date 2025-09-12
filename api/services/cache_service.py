@@ -82,15 +82,32 @@ class RedisCache:
     def _connect(self):
         """Connect to Redis server."""
         try:
-            self.redis_client = redis.Redis(
-                host=settings.REDIS_HOST,
-                port=settings.REDIS_PORT,
-                password=settings.REDIS_PASSWORD,
-                decode_responses=True,
-                socket_timeout=5,
-                socket_connect_timeout=5,
-                retry_on_timeout=True,
-            )
+            # Parse redis_url to get connection details
+            redis_url = settings.redis_url
+            if redis_url.startswith("redis://"):
+                # Extract host and port from redis_url
+                url_parts = redis_url.replace("redis://", "").split(":")
+                host = url_parts[0] if url_parts else "localhost"
+                port = int(url_parts[1]) if len(url_parts) > 1 else 6379
+
+                self.redis_client = redis.Redis(
+                    host=host,
+                    port=port,
+                    decode_responses=True,
+                    socket_timeout=5,
+                    socket_connect_timeout=5,
+                    retry_on_timeout=True,
+                )
+            else:
+                # Fallback to simple redis connection
+                self.redis_client = redis.from_url(
+                    settings.redis_url,
+                    decode_responses=True,
+                    socket_timeout=5,
+                    socket_connect_timeout=5,
+                    retry_on_timeout=True,
+                )
+
             # Test connection
             self.redis_client.ping()
             self.is_connected = True

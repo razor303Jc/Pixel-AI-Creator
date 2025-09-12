@@ -13,8 +13,8 @@ from enum import Enum
 from sqlalchemy import text
 from pydantic import BaseModel
 
-from ..core.database_manager import get_db_manager
-from ..core.logging import get_logger
+from core.database_manager import get_db_manager
+from core.logging import get_logger
 
 logger = get_logger(__name__)
 

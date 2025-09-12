@@ -5,7 +5,7 @@ Provides middleware integration for database management features
 
 from typing import Dict, Any, Optional, List
 from fastapi import Request, Response, HTTPException
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 import time
 import json
 import logging
@@ -16,8 +16,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 import uuid
 
-from api.core.database_manager import DatabaseConnectionManager
-from api.services.database_monitor import DatabaseMonitor, AlertLevel, MetricType
+from core.database_manager import DatabaseConnectionManager
+from services.database_monitor import DatabaseMonitor, AlertLevel, MetricType
 from api.core.database import get_db
 from api.core.config import settings
 

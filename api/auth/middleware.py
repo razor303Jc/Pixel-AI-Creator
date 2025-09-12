@@ -10,10 +10,13 @@ This module provides:
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Dict, Any, List
 from enum import Enum
 
 from .jwt import verify_user_token
+from core.database import get_db
+from models.user import User
 
 
 class UserRole(str, Enum):
@@ -125,6 +128,49 @@ def get_current_user(
         )
 
     return verify_user_token(credentials.credentials)
+
+
+async def get_current_user_model(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """Get current authenticated user as User model.
+
+    Args:
+        credentials: HTTP Bearer credentials
+        db: Database session
+
+    Returns:
+        Current user as User model
+    """
+    if not credentials:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header missing",
+        )
+
+    user_info = verify_user_token(credentials.credentials)
+    user_id = user_info.get("user_id")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token: user_id not found",
+        )
+
+    # Use async session for database query
+    from sqlalchemy import select
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+        )
+
+    return user
 
 
 def get_current_admin(

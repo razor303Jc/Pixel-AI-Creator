@@ -9,6 +9,7 @@ This module provides:
 
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -44,6 +45,9 @@ class User(Base):
         nullable=False,
     )
     last_login = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    sessions = relationship("UserSession", back_populates="user")
 
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', " f"role='{self.role}')>"

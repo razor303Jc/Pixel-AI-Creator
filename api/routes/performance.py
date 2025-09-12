@@ -14,8 +14,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from core.database import get_db
-from core.auth import get_current_user
-from services.cache_service import CacheService
+from auth.middleware import get_current_user
+from services.cache_service import RedisCache
 from services.background_tasks import TaskManager
 from services.conversation_processor import (
     ConversationProcessor,

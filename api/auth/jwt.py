@@ -11,7 +11,7 @@ This module provides:
 from jose import jwt, JWTError, ExpiredSignatureError
 import bcrypt
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from fastapi import HTTPException, status
 from core.config import Settings
 
@@ -26,11 +26,14 @@ class JWTHandler:
         self.algorithm = "HS256"
         self.access_token_expire_minutes = settings.access_token_expire_minutes
 
-    def create_access_token(self, data: Dict[str, Any]) -> str:
+    def create_access_token(
+        self, data: Dict[str, Any], session_id: Optional[str] = None
+    ) -> str:
         """Create a new access token.
 
         Args:
             data: Data to encode in the token (user_id, email, etc.)
+            session_id: Optional session ID to include in token
 
         Returns:
             Encoded JWT token string
@@ -38,6 +41,9 @@ class JWTHandler:
         to_encode = data.copy()
         expire = datetime.utcnow() + timedelta(minutes=self.access_token_expire_minutes)
         to_encode.update({"exp": expire, "type": "access"})
+
+        if session_id:
+            to_encode["session_id"] = session_id
 
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
