@@ -86,7 +86,15 @@ interface TestConversation {
 }
 
 const ChatbotManager: React.FC = () => {
-  const { chatbots, loading: chatbotsLoading, fetchChatbots, createChatbot, updateChatbot, deleteChatbot } = useChatbot();
+  const chatbotContext = useChatbot();
+  const { 
+    chatbots, 
+    loading: chatbotsLoading, 
+    fetchChatbots, 
+    createChatbot, 
+    updateChatbot, 
+    deleteChatbot 
+  } = chatbotContext || {};
   
   const [selectedChatbot, setSelectedChatbot] = useState<ChatbotConfig | null>(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
@@ -125,7 +133,9 @@ const ChatbotManager: React.FC = () => {
   const [toast, setToast] = useState({ show: false, message: '', variant: 'success' });
 
   useEffect(() => {
-    fetchChatbots();
+    if (fetchChatbots) {
+      fetchChatbots();
+    }
   }, [fetchChatbots]);
 
   const handleCreateNew = () => {
@@ -193,15 +203,17 @@ const ChatbotManager: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      if (currentConfig.id) {
-        await updateChatbot(currentConfig.id, currentConfig);
+      if (currentConfig.id && updateChatbot) {
+        await updateChatbot(currentConfig.id.toString(), currentConfig);
         showToast('Chatbot updated successfully!', 'success');
-      } else {
+      } else if (createChatbot) {
         await createChatbot(currentConfig);
         showToast('Chatbot created successfully!', 'success');
       }
       setShowConfigModal(false);
-      fetchChatbots();
+      if (fetchChatbots) {
+        fetchChatbots();
+      }
     } catch (error) {
       showToast('Error saving chatbot configuration', 'danger');
     }
@@ -210,9 +222,13 @@ const ChatbotManager: React.FC = () => {
   const handleDelete = async (chatbotId: number) => {
     if (window.confirm('Are you sure you want to delete this chatbot?')) {
       try {
-        await deleteChatbot(chatbotId);
-        showToast('Chatbot deleted successfully!', 'success');
-        fetchChatbots();
+        if (deleteChatbot) {
+          await deleteChatbot(chatbotId.toString());
+          showToast('Chatbot deleted successfully!', 'success');
+          if (fetchChatbots) {
+            fetchChatbots();
+          }
+        }
       } catch (error) {
         showToast('Error deleting chatbot', 'danger');
       }

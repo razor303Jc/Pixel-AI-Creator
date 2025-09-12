@@ -19,8 +19,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from fastapi import HTTPException, status
 
-from auth.advanced_models import PasswordHistory
+from auth.advanced_database_models import PasswordHistory
 from auth.jwt import hash_password
+from models.database_schema import User
 
 logger = logging.getLogger(__name__)
 

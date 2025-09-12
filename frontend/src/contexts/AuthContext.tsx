@@ -3,8 +3,9 @@
  * Manages user authentication state across the application
  */
 
-import React, { createContext, useContext, useReducer, useEffect } from "react";
+import React, { createContext, useContext, useReducer, useEffect, ReactNode } from "react";
 import { apiService, handleApiError } from "../services/api";
+import { AuthContextType, AuthUser } from "../types/auth";
 
 // Initial authentication state
 const initialState = {
@@ -25,7 +26,7 @@ const authActions = {
 };
 
 // Authentication reducer
-const authReducer = (state, action) => {
+const authReducer = (state: any, action: any) => {
   switch (action.type) {
     case authActions.SET_LOADING:
       return {
@@ -82,10 +83,10 @@ const authReducer = (state, action) => {
 };
 
 // Create authentication context
-export const AuthContext = createContext();
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 // Authentication provider component
-export const AuthProvider = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   // Initialize authentication on app start
@@ -117,7 +118,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Login function
-  const login = async (credentials) => {
+  const login = async (credentials: { email: string; password: string }): Promise<void> => {
     try {
       dispatch({ type: authActions.SET_LOADING, payload: true });
 
@@ -131,39 +132,40 @@ export const AuthProvider = ({ children }) => {
           token: tokenResponse.access_token,
         },
       });
-
-      return { success: true, user: userResponse.data };
     } catch (error) {
       const apiError = handleApiError(error);
       dispatch({
         type: authActions.LOGIN_ERROR,
         payload: apiError,
       });
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   };
 
   // Register function
-  const register = async (userData) => {
+  const register = async (userData: {
+    email: string;
+    password: string;
+    first_name?: string;
+    last_name?: string;
+  }): Promise<void> => {
     try {
       dispatch({ type: authActions.SET_LOADING, payload: true });
 
-      const registerResponse = await apiService.auth.register(userData);
+      await apiService.auth.register(userData);
 
       // After successful registration, automatically log in
-      const loginResult = await login({
+      await login({
         email: userData.email,
         password: userData.password,
       });
-
-      return loginResult;
     } catch (error) {
       const apiError = handleApiError(error);
       dispatch({
         type: authActions.LOGIN_ERROR,
         payload: apiError,
       });
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   };
 
@@ -179,7 +181,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Update user profile
-  const updateUser = (userData) => {
+  const updateUser = (userData: Partial<AuthUser>): void => {
     dispatch({
       type: authActions.SET_USER,
       payload: { ...state.user, ...userData },

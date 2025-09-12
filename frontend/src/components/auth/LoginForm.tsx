@@ -15,12 +15,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useContext(AuthContext);
+  const authContext = useContext(AuthContext);
+  const login = authContext?.login;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    
+    if (!login) {
+      setError('Authentication service not available');
+      setIsLoading(false);
+      return;
+    }
     
     try {
       await login({ email, password });

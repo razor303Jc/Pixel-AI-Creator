@@ -47,6 +47,14 @@ class DeviceType(str, Enum):
     UNKNOWN = "unknown"
 
 
+class MFAStatus(str, Enum):
+    """MFA configuration status"""
+
+    PENDING = "pending"
+    ENABLED = "enabled"
+    DISABLED = "disabled"
+
+
 # === MFA MODELS ===
 
 

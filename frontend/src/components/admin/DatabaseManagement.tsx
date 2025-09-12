@@ -335,8 +335,8 @@ const DatabaseManagement: React.FC = () => {
               {connectionStats && (
                 <ProgressBar 
                   now={(connectionStats.active_connections / connectionStats.max_connections) * 100}
-                  className="mt-2"
-                  size="sm"
+                  className="mt-2 progress-sm"
+                  style={{ height: '8px' }}
                 />
               )}
             </Card.Body>
@@ -514,7 +514,9 @@ const DatabaseManagement: React.FC = () => {
                         <td>
                           <Badge bg="info">{backup.backup_type}</Badge>
                           {backup.encrypted && (
-                            <Shield className="ms-1" size={14} title="Encrypted" />
+                            <span title="Encrypted">
+                              <Shield className="ms-1" size={14} />
+                            </span>
                           )}
                         </td>
                         <td>{formatFileSize(backup.file_size)}</td>

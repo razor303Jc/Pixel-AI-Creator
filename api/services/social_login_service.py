@@ -27,7 +27,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
 
-from auth.advanced_models import SocialLogin, SocialProvider, User
+from models.database_schema import User
+from auth.advanced_models import SocialProvider
+from auth.advanced_database_models import SocialAccount as SocialLogin
 from core.config import settings
 
 logger = logging.getLogger(__name__)

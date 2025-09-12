@@ -196,7 +196,7 @@ class SecurityEvent(Base):
     device_fingerprint = Column(String(255), nullable=True)
     location_country = Column(String(100), nullable=True)
     location_city = Column(String(100), nullable=True)
-    metadata = Column(JSON, nullable=True)  # Additional event data
+    event_metadata = Column(JSON, nullable=True)  # Additional event data
     risk_level = Column(String(20), default="low", nullable=False)  # low/medium/high
     created_at = Column(DateTime, default=func.now(), nullable=False)
 

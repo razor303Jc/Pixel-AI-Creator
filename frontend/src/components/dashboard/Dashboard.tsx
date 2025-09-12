@@ -73,9 +73,9 @@ const Dashboard = () => {
     clientsError,
     chatbotsError,
     conversationsError,
-    loadClients,
-    loadChatbots,
-    loadConversations,
+    fetchClients,
+    fetchChatbots,
+    fetchConversations,
     createClient,
     createChatbot,
     deleteClient,
@@ -94,10 +94,10 @@ const Dashboard = () => {
 
   // Load data on component mount
   useEffect(() => {
-    loadClients();
-    loadChatbots();
-    loadConversations();
-  }, [loadClients, loadChatbots, loadConversations]);
+    fetchClients();
+    fetchChatbots();
+    fetchConversations();
+  }, [fetchClients, fetchChatbots, fetchConversations]);
 
   // Handle create modal
   const openCreateModal = (type: string) => {
@@ -113,10 +113,9 @@ const Dashboard = () => {
 
   const handleCreateSubmit = async () => {
     try {
-      let result;
       if (createType === 'client') {
         const clientData = newItemData as ClientFormData;
-        result = await createClient({
+        await createClient({
           name: clientData.name,
           email: clientData.email,
           company: clientData.company,
@@ -124,7 +123,7 @@ const Dashboard = () => {
         });
       } else if (createType === 'chatbot') {
         const chatbotData = newItemData as ChatbotFormData;
-        result = await createChatbot({
+        await createChatbot({
           name: chatbotData.name,
           description: chatbotData.description,
           personality: chatbotData.personality || 'helpful',
@@ -132,11 +131,10 @@ const Dashboard = () => {
         });
       }
 
-      if (result.success) {
-        closeCreateModal();
-        setToastMessage(`${createType} created successfully!`);
-        setShowToast(true);
-      }
+      // If we reach here, the operation was successful
+      closeCreateModal();
+      setToastMessage(`${createType} created successfully!`);
+      setShowToast(true);
     } catch (error) {
       console.error('Failed to create item:', error);
     }
@@ -146,17 +144,15 @@ const Dashboard = () => {
   const handleDelete = async (item: any, type: string) => {
     if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
       try {
-        let result;
         if (type === 'client') {
-          result = await deleteClient(item.id);
+          await deleteClient(item.id.toString());
         } else if (type === 'chatbot') {
-          result = await deleteChatbot(item.id);
+          await deleteChatbot(item.id.toString());
         }
 
-        if (result.success) {
-          setToastMessage(`${type} deleted successfully!`);
-          setShowToast(true);
-        }
+        // If we reach here, the operation was successful
+        setToastMessage(`${type} deleted successfully!`);
+        setShowToast(true);
       } catch (error) {
         console.error('Failed to delete item:', error);
       }
@@ -245,7 +241,7 @@ const Dashboard = () => {
         {(clientsError || chatbotsError || conversationsError) && (
           <Alert variant="danger" dismissible onClose={clearAllErrors} className="mb-4">
             <AlertCircle size={16} className="me-2" />
-            {clientsError?.message || chatbotsError?.message || conversationsError?.message}
+            {clientsError || chatbotsError || conversationsError}
           </Alert>
         )}
 

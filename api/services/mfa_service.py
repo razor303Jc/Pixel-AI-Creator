@@ -24,7 +24,8 @@ import logging
 
 from core.config import settings
 from core.database import get_db
-from auth.advanced_models import UserMFA, MFAStatus
+from auth.advanced_database_models import MFAConfiguration as UserMFA
+from models.database_schema import User
 
 logger = logging.getLogger(__name__)
 
@@ -41,14 +42,23 @@ class MFAService:
         """Get or generate encryption key for MFA secrets"""
         # In production, this should be stored securely (e.g., environment variable, vault)
         key = getattr(settings, "MFA_ENCRYPTION_KEY", None)
-        if not key:
+        if not key or key == "pixel-mfa-encryption-key-2024-secure":
             # Generate a key (in production, store this securely)
             key = Fernet.generate_key()
             logger.warning(
                 "Generated new MFA encryption key. In production, store this securely!"
             )
         elif isinstance(key, str):
-            key = key.encode()
+            try:
+                # Try to decode as base64 first
+                import base64
+                key = base64.urlsafe_b64decode(key.encode())
+            except Exception:
+                # If that fails, generate a new key
+                key = Fernet.generate_key()
+                logger.warning(
+                    "Invalid MFA encryption key format. Generated new key."
+                )
         return key
 
     def _encrypt_data(self, data: str) -> str:
@@ -161,7 +171,7 @@ class MFAService:
                 # Update existing record
                 user_mfa.secret_key = encrypted_secret
                 user_mfa.backup_codes = encrypted_backup_codes
-                user_mfa.status = MFAStatus.PENDING
+                user_mfa.is_enabled = False  # Will be enabled after verification
                 user_mfa.phone_number = phone_number
                 user_mfa.recovery_email = recovery_email
                 user_mfa.updated_at = datetime.utcnow()
@@ -171,7 +181,6 @@ class MFAService:
                     user_id=user_id,
                     secret_key=encrypted_secret,
                     backup_codes=encrypted_backup_codes,
-                    status=MFAStatus.PENDING,
                     phone_number=phone_number,
                     recovery_email=recovery_email,
                     is_enabled=False,
@@ -201,10 +210,10 @@ class MFAService:
     ) -> bool:
         """Verify MFA setup with initial code"""
         try:
-            # Get user's MFA record
+            # Get user's MFA record (not yet enabled)
             result = await db.execute(
                 select(UserMFA).where(
-                    UserMFA.user_id == user_id, UserMFA.status == MFAStatus.PENDING
+                    UserMFA.user_id == user_id, UserMFA.is_enabled == False
                 )
             )
             user_mfa = result.scalar_one_or_none()
@@ -222,8 +231,7 @@ class MFAService:
             if self.verify_totp_code(secret_key, verification_code):
                 # Enable MFA
                 user_mfa.is_enabled = True
-                user_mfa.status = MFAStatus.ENABLED
-                user_mfa.last_verified = datetime.utcnow()
+                user_mfa.last_used = datetime.utcnow()
                 user_mfa.updated_at = datetime.utcnow()
 
                 await db.commit()
@@ -253,8 +261,7 @@ class MFAService:
             result = await db.execute(
                 select(UserMFA).where(
                     UserMFA.user_id == user_id,
-                    UserMFA.is_enabled == True,
-                    UserMFA.status == MFAStatus.ENABLED,
+                    UserMFA.is_enabled.is_(True),
                 )
             )
             user_mfa = result.scalar_one_or_none()
@@ -281,12 +288,8 @@ class MFAService:
                     user_mfa.backup_codes = [
                         self._encrypt_data(code) for code in updated_codes
                     ]
-                    user_mfa.last_verified = datetime.utcnow()
+                    user_mfa.last_used = datetime.utcnow()
                     user_mfa.updated_at = datetime.utcnow()
-
-                    # Check if no backup codes left
-                    if not updated_codes:
-                        user_mfa.status = MFAStatus.BACKUP_CODES_USED
 
                     await db.commit()
                     logger.info(f"Backup code used for user {user_id}")
@@ -325,7 +328,6 @@ class MFAService:
 
             if user_mfa:
                 user_mfa.is_enabled = False
-                user_mfa.status = MFAStatus.DISABLED
                 user_mfa.secret_key = None
                 user_mfa.backup_codes = None
                 user_mfa.updated_at = datetime.utcnow()
@@ -355,9 +357,8 @@ class MFAService:
             if not user_mfa:
                 return {
                     "is_enabled": False,
-                    "status": MFAStatus.DISABLED,
                     "backup_codes_remaining": 0,
-                    "last_verified": None,
+                    "last_used": None,
                 }
 
             backup_codes_remaining = (
@@ -366,9 +367,8 @@ class MFAService:
 
             return {
                 "is_enabled": user_mfa.is_enabled,
-                "status": user_mfa.status,
                 "backup_codes_remaining": backup_codes_remaining,
-                "last_verified": user_mfa.last_verified,
+                "last_used": user_mfa.last_used,
                 "phone_number": user_mfa.phone_number,
                 "recovery_email": user_mfa.recovery_email,
             }
@@ -387,7 +387,7 @@ class MFAService:
         try:
             result = await db.execute(
                 select(UserMFA).where(
-                    UserMFA.user_id == user_id, UserMFA.is_enabled == True
+                    UserMFA.user_id == user_id, UserMFA.is_enabled.is_(True)
                 )
             )
             user_mfa = result.scalar_one_or_none()
@@ -406,9 +406,6 @@ class MFAService:
 
             # Update the record
             user_mfa.backup_codes = encrypted_backup_codes
-            user_mfa.status = (
-                MFAStatus.ENABLED
-            )  # Reset status if it was BACKUP_CODES_USED
             user_mfa.updated_at = datetime.utcnow()
 
             await db.commit()

@@ -20,18 +20,21 @@ from sqlalchemy.orm import selectinload
 import user_agents
 from pydantic import BaseModel, EmailStr, validator
 
+from models.database_schema import User
 from auth.advanced_models import (
-    User,
     MFAMethod,
     SocialProvider,
-    LoginAttempt,
     DeviceInfo,
-    UserMFA,
-    SocialLogin,
+)
+from auth.advanced_database_models import (
+    LoginAttempt,
+    MFAConfiguration as UserMFA,
+    SocialAccount,
     PasswordHistory,
 )
-from auth.dependencies import get_current_user, get_db
-from auth.jwt import create_access_token, hash_password, verify_password
+from auth.middleware import get_current_user
+from core.database import get_db
+from auth.jwt import jwt_handler, hash_password, verify_password
 from services.mfa_service import mfa_service
 from services.password_strength_service import password_strength_service
 from services.social_login_service import social_login_service
@@ -365,7 +368,7 @@ async def login_with_mfa(
                 )
 
         # Create access token
-        access_token = create_access_token(data={"sub": str(user.id)})
+        access_token = jwt_handler.create_access_token(data={"sub": str(user.id)})
 
         # Update last login
         user.last_login = datetime.utcnow()
@@ -546,7 +549,9 @@ async def social_callback(
 
         if social_login.user_id:
             # Existing user login
-            access_token = create_access_token(data={"sub": str(social_login.user_id)})
+            access_token = jwt_handler.create_access_token(
+                data={"sub": str(social_login.user_id)}
+            )
 
             return {
                 "access_token": access_token,

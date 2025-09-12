@@ -4,7 +4,7 @@ import { Globe, Languages, MessageCircle, Settings, BarChart3 } from 'lucide-rea
 import apiService from '../../services/api';
 
 // Language Context
-const LanguageContext = createContext();
+const LanguageContext = createContext(null);
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
@@ -135,7 +135,7 @@ const LanguageSettings = ({ chatbotId }) => {
                   }))}
                 >
                   {Object.entries(availableLanguages).map(([code, name]) => (
-                    <option key={code} value={code}>{name}</option>
+                    <option key={code} value={code}>{String(name)}</option>
                   ))}
                 </Form.Select>
               </Form.Group>
@@ -151,7 +151,7 @@ const LanguageSettings = ({ chatbotId }) => {
                   }))}
                 >
                   {Object.entries(availableLanguages).map(([code, name]) => (
-                    <option key={code} value={code}>{name}</option>
+                    <option key={code} value={code}>{String(name)}</option>
                   ))}
                 </Form.Select>
               </Form.Group>
@@ -180,7 +180,7 @@ const LanguageSettings = ({ chatbotId }) => {
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleLanguageToggle(code)}
                 >
-                  {name} ({code})
+                  {String(name)} ({code})
                 </Badge>
               ))}
             </div>
@@ -343,7 +343,7 @@ const TranslationTool = () => {
                 onChange={(e) => setTargetLanguage(e.target.value)}
               >
                 {Object.entries(languages).map(([code, name]) => (
-                  <option key={code} value={code}>{name}</option>
+                  <option key={code} value={code}>{String(name)}</option>
                 ))}
               </Form.Select>
             </Form.Group>

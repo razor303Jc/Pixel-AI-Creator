@@ -582,6 +582,10 @@ Key Implementation Files:
 - Security Dashboard (device management, login history)
 - Account Settings (MFA toggle, social accounts, security preferences)
 
+**📝 TECHNICAL DEBT (To Address Later):**
+
+- [ ] **Re-enable TypeScript Strict Mode** - Currently disabled in tsconfig.json to resolve compilation issues. Need to systematically fix all type mismatches and re-enable strict checking for better code quality and type safety.
+
 ### API Gateway & Rate Limiting
 
 - [ ] **API gateway implementation**

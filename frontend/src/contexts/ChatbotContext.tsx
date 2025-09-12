@@ -8,10 +8,12 @@ import React, {
   useContext,
   useReducer,
   useCallback,
+  ReactNode,
 } from "react";
 import { apiService, handleApiError } from "../services/api";
+import { ChatbotContextType } from "../types/chatbot";
 
-// Initial state for chatbot management
+// Initialize context state for chatbot management
 const initialState = {
   // Clients state
   clients: [],
@@ -49,7 +51,7 @@ const actionTypes = {
   SET_CHATBOTS_ERROR: "SET_CHATBOTS_ERROR",
   ADD_CHATBOT: "ADD_CHATBOT",
   UPDATE_CHATBOT: "UPDATE_CHATBOT",
-  REMOVE_CHATBOT: "REMOVE_CHATBOT",
+  DELETE_CHATBOT: "DELETE_CHATBOT",
   SET_CURRENT_CHATBOT: "SET_CURRENT_CHATBOT",
 
   // Conversation actions
@@ -58,7 +60,7 @@ const actionTypes = {
   SET_CONVERSATIONS_ERROR: "SET_CONVERSATIONS_ERROR",
   ADD_CONVERSATION: "ADD_CONVERSATION",
   UPDATE_CONVERSATION: "UPDATE_CONVERSATION",
-  REMOVE_CONVERSATION: "REMOVE_CONVERSATION",
+  DELETE_CONVERSATION: "DELETE_CONVERSATION",
   SET_CURRENT_CONVERSATION: "SET_CURRENT_CONVERSATION",
 
   // General actions
@@ -66,7 +68,7 @@ const actionTypes = {
 };
 
 // Reducer function
-const chatbotReducer = (state, action) => {
+const chatbotReducer = (state: any, action: any) => {
   switch (action.type) {
     // Client cases
     case actionTypes.SET_CLIENTS_LOADING:
@@ -96,27 +98,22 @@ const chatbotReducer = (state, action) => {
     case actionTypes.UPDATE_CLIENT:
       return {
         ...state,
-        clients: state.clients.map((client) =>
+        clients: state.clients.map((client: any) =>
           client.id === action.payload.id ? action.payload : client
         ),
-        currentClient:
-          state.currentClient?.id === action.payload.id
-            ? action.payload
-            : state.currentClient,
       };
 
     case actionTypes.REMOVE_CLIENT:
       return {
         ...state,
-        clients: state.clients.filter((client) => client.id !== action.payload),
-        currentClient:
-          state.currentClient?.id === action.payload
-            ? null
-            : state.currentClient,
+        clients: state.clients.filter((client: any) => client.id !== action.payload),
       };
 
     case actionTypes.SET_CURRENT_CLIENT:
-      return { ...state, currentClient: action.payload };
+      return {
+        ...state,
+        currentClient: action.payload,
+      };
 
     // Chatbot cases
     case actionTypes.SET_CHATBOTS_LOADING:
@@ -150,29 +147,24 @@ const chatbotReducer = (state, action) => {
     case actionTypes.UPDATE_CHATBOT:
       return {
         ...state,
-        chatbots: state.chatbots.map((chatbot) =>
+        chatbots: state.chatbots.map((chatbot: any) =>
           chatbot.id === action.payload.id ? action.payload : chatbot
         ),
-        currentChatbot:
-          state.currentChatbot?.id === action.payload.id
-            ? action.payload
-            : state.currentChatbot,
       };
 
-    case actionTypes.REMOVE_CHATBOT:
+    case actionTypes.DELETE_CHATBOT:
       return {
         ...state,
         chatbots: state.chatbots.filter(
-          (chatbot) => chatbot.id !== action.payload
+          (chatbot: any) => chatbot.id !== action.payload
         ),
-        currentChatbot:
-          state.currentChatbot?.id === action.payload
-            ? null
-            : state.currentChatbot,
       };
 
     case actionTypes.SET_CURRENT_CHATBOT:
-      return { ...state, currentChatbot: action.payload };
+      return {
+        ...state,
+        currentChatbot: action.payload,
+      };
 
     // Conversation cases
     case actionTypes.SET_CONVERSATIONS_LOADING:
@@ -206,31 +198,25 @@ const chatbotReducer = (state, action) => {
     case actionTypes.UPDATE_CONVERSATION:
       return {
         ...state,
-        conversations: state.conversations.map((conversation) =>
+        conversations: state.conversations.map((conversation: any) =>
           conversation.id === action.payload.id ? action.payload : conversation
         ),
-        currentConversation:
-          state.currentConversation?.id === action.payload.id
-            ? action.payload
-            : state.currentConversation,
       };
 
-    case actionTypes.REMOVE_CONVERSATION:
+    case actionTypes.DELETE_CONVERSATION:
       return {
         ...state,
         conversations: state.conversations.filter(
-          (conversation) => conversation.id !== action.payload
+          (conversation: any) => conversation.id !== action.payload
         ),
-        currentConversation:
-          state.currentConversation?.id === action.payload
-            ? null
-            : state.currentConversation,
       };
 
     case actionTypes.SET_CURRENT_CONVERSATION:
-      return { ...state, currentConversation: action.payload };
+      return {
+        ...state,
+        currentConversation: action.payload,
+      };
 
-    // General cases
     case actionTypes.CLEAR_ALL_ERRORS:
       return {
         ...state,
@@ -244,224 +230,216 @@ const chatbotReducer = (state, action) => {
   }
 };
 
-// Create context
-const ChatbotContext = createContext();
+// Create the context
+const ChatbotContext = createContext<ChatbotContextType | null>(null);
 
 // Provider component
-export const ChatbotProvider = ({ children }) => {
+export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [state, dispatch] = useReducer(chatbotReducer, initialState);
 
-  // Client management functions
-  const loadClients = useCallback(async () => {
+  // Client Management Functions
+  const fetchClients = useCallback(async (): Promise<void> => {
     dispatch({ type: actionTypes.SET_CLIENTS_LOADING, payload: true });
     try {
       const response = await apiService.clients.getAll();
       dispatch({ type: actionTypes.SET_CLIENTS, payload: response.data });
     } catch (error) {
       const apiError = handleApiError(error);
-      dispatch({ type: actionTypes.SET_CLIENTS_ERROR, payload: apiError });
+      dispatch({ type: actionTypes.SET_CLIENTS_ERROR, payload: apiError.message });
     }
   }, []);
 
-  const createClient = useCallback(async (clientData) => {
+  const createClient = useCallback(async (clientData: any): Promise<void> => {
     try {
       const response = await apiService.clients.create(clientData);
       dispatch({ type: actionTypes.ADD_CLIENT, payload: response.data });
-      return { success: true, data: response.data };
     } catch (error) {
       const apiError = handleApiError(error);
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   }, []);
 
-  const updateClient = useCallback(async (clientId, clientData) => {
+  const updateClient = useCallback(async (clientId: string, clientData: any): Promise<void> => {
     try {
       const response = await apiService.clients.update(clientId, clientData);
       dispatch({ type: actionTypes.UPDATE_CLIENT, payload: response.data });
-      return { success: true, data: response.data };
     } catch (error) {
       const apiError = handleApiError(error);
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   }, []);
 
-  const deleteClient = useCallback(async (clientId) => {
+  const deleteClient = useCallback(async (clientId: string): Promise<void> => {
     try {
       await apiService.clients.delete(clientId);
       dispatch({ type: actionTypes.REMOVE_CLIENT, payload: clientId });
-      return { success: true };
     } catch (error) {
       const apiError = handleApiError(error);
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   }, []);
 
-  const setCurrentClient = useCallback((client) => {
+  const setCurrentClient = useCallback((client: any): void => {
     dispatch({ type: actionTypes.SET_CURRENT_CLIENT, payload: client });
   }, []);
 
-  // Chatbot management functions
-  const loadChatbots = useCallback(async () => {
+  // Chatbot Management Functions
+  const fetchChatbots = useCallback(async (): Promise<void> => {
     dispatch({ type: actionTypes.SET_CHATBOTS_LOADING, payload: true });
     try {
       const response = await apiService.chatbots.getAll();
       dispatch({ type: actionTypes.SET_CHATBOTS, payload: response.data });
     } catch (error) {
       const apiError = handleApiError(error);
-      dispatch({ type: actionTypes.SET_CHATBOTS_ERROR, payload: apiError });
+      dispatch({ type: actionTypes.SET_CHATBOTS_ERROR, payload: apiError.message });
     }
   }, []);
 
-  const createChatbot = useCallback(async (chatbotData) => {
+  const createChatbot = useCallback(async (chatbotData: any): Promise<void> => {
     try {
       const response = await apiService.chatbots.create(chatbotData);
       dispatch({ type: actionTypes.ADD_CHATBOT, payload: response.data });
-      return { success: true, data: response.data };
     } catch (error) {
       const apiError = handleApiError(error);
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   }, []);
 
-  const updateChatbot = useCallback(async (chatbotId, chatbotData) => {
+  const updateChatbot = useCallback(async (chatbotId: string, chatbotData: any): Promise<void> => {
     try {
       const response = await apiService.chatbots.update(chatbotId, chatbotData);
       dispatch({ type: actionTypes.UPDATE_CHATBOT, payload: response.data });
-      return { success: true, data: response.data };
     } catch (error) {
       const apiError = handleApiError(error);
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   }, []);
 
-  const deleteChatbot = useCallback(async (chatbotId) => {
+  const deleteChatbot = useCallback(async (chatbotId: string): Promise<void> => {
     try {
       await apiService.chatbots.delete(chatbotId);
-      dispatch({ type: actionTypes.REMOVE_CHATBOT, payload: chatbotId });
-      return { success: true };
+      dispatch({ type: actionTypes.DELETE_CHATBOT, payload: chatbotId });
     } catch (error) {
       const apiError = handleApiError(error);
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   }, []);
 
-  const setCurrentChatbot = useCallback((chatbot) => {
+  const setCurrentChatbot = useCallback((chatbot: any): void => {
     dispatch({ type: actionTypes.SET_CURRENT_CHATBOT, payload: chatbot });
   }, []);
 
-  // Conversation management functions
-  const loadConversations = useCallback(async () => {
+  // Conversation Management Functions
+  const fetchConversations = useCallback(async (): Promise<void> => {
     dispatch({ type: actionTypes.SET_CONVERSATIONS_LOADING, payload: true });
     try {
       const response = await apiService.conversations.getAll();
       dispatch({ type: actionTypes.SET_CONVERSATIONS, payload: response.data });
     } catch (error) {
       const apiError = handleApiError(error);
-      dispatch({
-        type: actionTypes.SET_CONVERSATIONS_ERROR,
-        payload: apiError,
-      });
+      dispatch({ type: actionTypes.SET_CONVERSATIONS_ERROR, payload: apiError.message });
     }
   }, []);
 
-  const createConversation = useCallback(async (conversationData) => {
+  const createConversation = useCallback(async (conversationData: any): Promise<void> => {
     try {
       const response = await apiService.conversations.create(conversationData);
       dispatch({ type: actionTypes.ADD_CONVERSATION, payload: response.data });
-      return { success: true, data: response.data };
     } catch (error) {
       const apiError = handleApiError(error);
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   }, []);
 
   const updateConversation = useCallback(
-    async (conversationId, conversationData) => {
+    async (conversationId: string, conversationData: any): Promise<void> => {
       try {
         const response = await apiService.conversations.update(
           conversationId,
           conversationData
         );
-        dispatch({
-          type: actionTypes.UPDATE_CONVERSATION,
-          payload: response.data,
-        });
-        return { success: true, data: response.data };
+        dispatch({ type: actionTypes.UPDATE_CONVERSATION, payload: response.data });
       } catch (error) {
         const apiError = handleApiError(error);
-        return { success: false, error: apiError };
+        throw new Error(apiError.message);
       }
     },
     []
   );
 
-  const deleteConversation = useCallback(async (conversationId) => {
+  const deleteConversation = useCallback(async (conversationId: string): Promise<void> => {
     try {
       await apiService.conversations.delete(conversationId);
-      dispatch({
-        type: actionTypes.REMOVE_CONVERSATION,
-        payload: conversationId,
-      });
-      return { success: true };
+      dispatch({ type: actionTypes.DELETE_CONVERSATION, payload: conversationId });
     } catch (error) {
       const apiError = handleApiError(error);
-      return { success: false, error: apiError };
+      throw new Error(apiError.message);
     }
   }, []);
 
-  const setCurrentConversation = useCallback((conversation) => {
+  const setCurrentConversation = useCallback((conversation: any): void => {
     dispatch({
       type: actionTypes.SET_CURRENT_CONVERSATION,
       payload: conversation,
     });
   }, []);
 
-  // Clear all errors
-  const clearAllErrors = useCallback(() => {
+  // Clear errors
+  const clearAllErrors = useCallback((): void => {
     dispatch({ type: actionTypes.CLEAR_ALL_ERRORS });
   }, []);
 
-  const value = {
+  const contextValue: ChatbotContextType = {
     // State
     ...state,
+    
+    // Generic loading state for backward compatibility
+    loading: state.isLoadingChatbots,
 
-    // Client actions
-    loadClients,
+    // Client functions
+    fetchClients,
     createClient,
     updateClient,
     deleteClient,
     setCurrentClient,
 
-    // Chatbot actions
-    loadChatbots,
+    // Chatbot functions
+    fetchChatbots,
     createChatbot,
     updateChatbot,
     deleteChatbot,
     setCurrentChatbot,
 
-    // Conversation actions
-    loadConversations,
+    // Conversation functions
+    fetchConversations,
     createConversation,
     updateConversation,
     deleteConversation,
     setCurrentConversation,
 
-    // General actions
+    // Utility functions
     clearAllErrors,
   };
 
   return (
-    <ChatbotContext.Provider value={value}>{children}</ChatbotContext.Provider>
+    <ChatbotContext.Provider value={contextValue}>
+      {children}
+    </ChatbotContext.Provider>
   );
 };
 
-// Custom hook to use chatbot context
-export const useChatbot = () => {
+// Custom hook to use the context
+export const useChatbotContext = (): ChatbotContextType => {
   const context = useContext(ChatbotContext);
-
   if (!context) {
-    throw new Error("useChatbot must be used within a ChatbotProvider");
+    throw new Error("useChatbotContext must be used within a ChatbotProvider");
   }
-
   return context;
 };
+
+// Export alias for backward compatibility
+export const useChatbot = useChatbotContext;
+
+export default ChatbotContext;
