@@ -20,6 +20,10 @@ class Settings(BaseSettings):
 
     # Redis
     redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379")
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
+    REDIS_PORT: int = int(os.getenv("REDIS_PORT", "6379"))
+    redis_host: str = os.getenv("REDIS_HOST", "localhost")
+    redis_port: int = int(os.getenv("REDIS_PORT", "6379"))
 
     # AI Services
     openai_api_key: str = os.getenv("OPENAI_API_KEY", "")

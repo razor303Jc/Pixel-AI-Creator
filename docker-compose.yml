@@ -68,7 +68,8 @@ services:
       context: ./api
       dockerfile: ../docker/api/Dockerfile
     container_name: pixel-celery-worker
-    command: celery -A core.celery_app worker --loglevel=info --queues=default,conversations,analytics,notifications,maintenance --concurrency=4
+    entrypoint: []
+    command: bash -c "cd /app && python -m celery -A core.celery_app worker --loglevel=info --queues=default,conversations,analytics,notifications,maintenance --concurrency=4"
     environment:
       - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
       - REDIS_URL=redis://redis:6379
@@ -95,7 +96,8 @@ services:
       context: ./api
       dockerfile: ../docker/api/Dockerfile
     container_name: pixel-celery-beat
-    command: celery -A core.celery_app beat --loglevel=info
+    entrypoint: []
+    command: bash -c "cd /app && python -m celery -A core.celery_app beat --loglevel=info"
     environment:
       - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
       - REDIS_URL=redis://redis:6379
@@ -122,7 +124,8 @@ services:
       context: ./api
       dockerfile: ../docker/api/Dockerfile
     container_name: pixel-celery-flower
-    command: celery -A core.celery_app flower --port=5555
+    entrypoint: []
+    command: bash -c "cd /app && python -m celery -A core.celery_app flower --port=5555"
     environment:
       - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
       - REDIS_URL=redis://redis:6379
