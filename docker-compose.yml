@@ -39,6 +39,11 @@ services:
     container_name: pixel-api
     environment:
       - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=pixel_ai
+      - DATABASE_USER=pixel_user
+      - DATABASE_PASSWORD=pixel_secure_2024
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       - REDIS_PORT=6379
