@@ -67,3 +67,14 @@ structlog==23.2.0
 cryptography==41.0.7
 apscheduler==3.10.4
 python-crontab==3.0.0
+
+# Advanced Authentication Features
+pyotp==2.9.0  # For TOTP (Time-based One-Time Password) 2FA
+qrcode[pil]==7.4.2  # For generating QR codes for 2FA setup
+authlib==1.3.0  # For OAuth2 social login integration
+itsdangerous==2.1.2  # For secure token generation
+python-magic==0.4.27  # For file type validation
+zxcvbn==4.4.28  # For password strength validation
+user-agents==2.2.0  # For device detection and tracking
+geoip2==4.7.0  # For IP-based location detection
+pycountry==23.12.11  # For country code validation

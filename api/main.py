@@ -34,6 +34,7 @@ from routes.database_simple import router as database_router
 from routes.sessions import router as sessions_router
 from routes.sessions_test import router as sessions_test_router
 from auth.routes import router as auth_router
+from auth.enhanced_routes import router as enhanced_auth_router
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -67,6 +68,7 @@ app.include_router(chatbots_router, prefix="/api")
 app.include_router(conversations_router, prefix="/api")
 app.include_router(analytics_router)
 app.include_router(auth_router, prefix="/api")
+app.include_router(enhanced_auth_router, prefix="/api")
 app.include_router(sessions_router, prefix="/api")
 app.include_router(sessions_test_router, prefix="/api")
 # Temporarily disabled due to cache issues:

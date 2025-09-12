@@ -38,6 +38,22 @@ class Settings(BaseSettings):
     linkedin_client_id: Optional[str] = os.getenv("LINKEDIN_CLIENT_ID")
     linkedin_client_secret: Optional[str] = os.getenv("LINKEDIN_CLIENT_SECRET")
 
+    # Social Authentication
+    GOOGLE_CLIENT_ID: Optional[str] = os.getenv("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET: Optional[str] = os.getenv("GOOGLE_CLIENT_SECRET")
+    GITHUB_CLIENT_ID: Optional[str] = os.getenv("GITHUB_CLIENT_ID")
+    GITHUB_CLIENT_SECRET: Optional[str] = os.getenv("GITHUB_CLIENT_SECRET")
+    LINKEDIN_CLIENT_ID: Optional[str] = os.getenv("LINKEDIN_CLIENT_ID")
+    LINKEDIN_CLIENT_SECRET: Optional[str] = os.getenv("LINKEDIN_CLIENT_SECRET")
+
+    # Base URL for OAuth callbacks
+    BASE_URL: str = os.getenv("BASE_URL", "http://localhost:8000")
+
+    # MFA Encryption
+    MFA_ENCRYPTION_KEY: str = os.getenv(
+        "MFA_ENCRYPTION_KEY", "pixel-mfa-encryption-key-2024-secure"
+    )
+
     # Application
     environment: str = os.getenv("ENVIRONMENT", "development")
     debug: bool = environment == "development"
