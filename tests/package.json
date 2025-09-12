@@ -5,6 +5,8 @@
   "scripts": {
     "test": "playwright test",
     "test:frontend": "playwright test test_frontend_comprehensive_playwright.spec.js",
+    "test:qa": "playwright test test_frontend_complete_qa.spec.js",
+    "test:qa-comprehensive": "../run_comprehensive_qa_tests.sh",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",
     "test:headed": "playwright test --headed",
