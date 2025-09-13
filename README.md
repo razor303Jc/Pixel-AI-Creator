@@ -14,12 +14,14 @@ Pixel-AI-Creator is a comprehensive platform for creating, managing, and deployi
 ## ✨ Key Features
 
 ### 🤖 **AI-Powered Conversations**
+
 - **OpenAI Integration**: Advanced GPT-4o-mini powered responses
 - **Context Management**: Intelligent conversation threading
 - **Customizable Personalities**: Tailored chatbot behaviors
 - **Real-time Processing**: Instant response generation
 
 ### � **Document Processing System**
+
 - **Multi-Format Support**: PDF, DOCX, TXT file processing
 - **Drag-and-Drop Interface**: Modern file upload experience
 - **Text Extraction**: Automated content analysis
@@ -27,12 +29,14 @@ Pixel-AI-Creator is a comprehensive platform for creating, managing, and deployi
 - **Knowledge Base**: Document-powered chatbot responses
 
 ### 👥 **User Management**
+
 - **Complete Authentication**: JWT-based secure login system
 - **Profile Management**: Full user account control
 - **Role-Based Access**: Secure permission system
 - **Account Settings**: Password management and profile updates
 
 ### 🏗️ **Platform Management**
+
 - **Client Management**: Multi-tenant client organization
 - **Chatbot Creation**: Visual chatbot builder
 - **Analytics Dashboard**: Performance insights and metrics
