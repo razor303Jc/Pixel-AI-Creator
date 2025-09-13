@@ -88,7 +88,7 @@ async def chat_with_ai(
             )
 
         # Check user access
-        if conversation.user_id != current_user["id"]:
+        if conversation.user_id != current_user["user_id"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied to conversation",
@@ -149,7 +149,7 @@ async def chat_with_ai(
         context = await openai_service.create_conversation_context(
             chatbot_id=str(project.id),
             conversation_id=str(conversation.id),
-            user_id=str(current_user["id"]),
+            user_id=str(current_user["user_id"]),
             personality_config=personality_config,
         )
 
@@ -169,7 +169,7 @@ async def chat_with_ai(
             conversation_id=request.conversation_id,
             content=request.message,
             message_type="user",
-            sender_id=current_user["id"],
+            sender_id=current_user["user_id"],
         )
         db.add(user_message)
         await db.flush()

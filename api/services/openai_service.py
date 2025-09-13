@@ -46,8 +46,8 @@ class OpenAIService:
     def __init__(self):
         """Initialize OpenAI service with configuration"""
         self.client = AsyncOpenAI(api_key=settings.openai_api_key)
-        self.default_model = "gpt-4"
-        self.streaming_model = "gpt-4"
+        self.default_model = "gpt-4o-mini"
+        self.streaming_model = "gpt-4o-mini"
 
         # Context management
         self.max_context_messages = 10

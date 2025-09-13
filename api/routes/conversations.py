@@ -49,7 +49,7 @@ async def create_conversation(
         and_(
             Project.id == conversation_data.project_id,
             or_(
-                Project.user_id == current_user["user_id"],
+                Project.client_id == current_user["client_id"],
                 current_user["role"] == "admin",
             ),
         )
