@@ -1,0 +1,133 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: pixel-postgres-dev
+    environment:
+      POSTGRES_DB: pixel_ai_dev
+      POSTGRES_USER: pixel_user
+      POSTGRES_PASSWORD: pixel_secure_2024
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - pixel-dev-network
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: pixel-redis-dev
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - pixel-dev-network
+    restart: unless-stopped
+
+  # FastAPI Backend - Development Mode with Volume Mounts
+  api:
+    build: 
+      context: ./api
+      dockerfile: ../docker/api/Dockerfile.dev
+    container_name: pixel-api-dev
+    environment:
+      - DATABASE_URL=postgresql://pixel_user:pixel_secure_2024@postgres:5432/pixel_ai_dev
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=pixel_ai_dev
+      - DATABASE_USER=pixel_user
+      - DATABASE_PASSWORD=pixel_secure_2024
+      - REDIS_URL=redis://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - SECRET_KEY=${SECRET_KEY:-pixel-ai-dev-secret-key-2024}
+      - RELOAD=true
+    volumes:
+      # Mount the entire API directory for live code reloading
+      - ./api:/app
+      - ./generated-bots:/app/generated-bots
+      - ./templates:/app/templates
+      - ./logs:/app/logs
+    ports:
+      - "8002:8000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - pixel-dev-network
+    restart: unless-stopped
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app"]
+
+  # React Frontend - Development Mode with Volume Mounts
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile.dev
+    container_name: pixel-frontend-dev
+    environment:
+      - REACT_APP_API_URL=http://localhost:8002
+      - REACT_APP_ENVIRONMENT=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      # Mount source code for live reloading
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/package-lock.json:/app/package-lock.json
+      # Exclude node_modules to prevent conflicts
+      - /app/node_modules
+    ports:
+      - "3002:3000"
+    depends_on:
+      - api
+    networks:
+      - pixel-dev-network
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  # ChromaDB Vector Database
+  chromadb:
+    image: ghcr.io/chroma-core/chroma:0.4.24
+    container_name: pixel-chromadb-dev
+    environment:
+      - ANONYMIZED_TELEMETRY=false
+      - IS_PERSISTENT=true
+      - PERSIST_DIRECTORY=/chroma/chroma
+    ports:
+      - "8003:8000"
+    volumes:
+      - chromadb_dev_data:/chroma/chroma
+    networks:
+      - pixel-dev-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM); sock.settimeout(1); result = sock.connect_ex(('localhost', 8000)); sock.close(); exit(0 if result == 0 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Volumes
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  chromadb_dev_data:
+    driver: local
+
+# Networks
+networks:
+  pixel-dev-network:
+    driver: bridge
