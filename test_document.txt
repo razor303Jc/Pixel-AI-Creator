@@ -1,0 +1,18 @@
+Test Document for File Upload System
+
+This is a test document to validate the file upload system in the Pixel-AI-Creator platform.
+
+Key features to test:
+1. File upload through drag-and-drop interface
+2. Document text extraction and processing
+3. Vector embedding generation and storage
+4. Document management (list, view, delete)
+
+The system should be able to:
+- Accept TXT, PDF, and DOCX files
+- Extract text content from uploaded files
+- Generate vector embeddings for semantic search
+- Store document metadata in PostgreSQL
+- Provide a user-friendly interface for document management
+
+This test document contains enough text to validate the text extraction and processing pipeline.

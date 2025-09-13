@@ -43,10 +43,12 @@ import {
   Zap,
   TestTube,
   Activity,
-  Sliders
+  Sliders,
+  FileText
 } from 'lucide-react';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import { apiService } from '../../services/api';
+import DocumentUpload from '../documents/DocumentUpload';
 
 interface ChatbotConfig {
   id?: number;
@@ -131,6 +133,8 @@ const ChatbotManager: React.FC = () => {
   const [testLoading, setTestLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [toast, setToast] = useState({ show: false, message: '', variant: 'success' });
+  const [showDocumentUpload, setShowDocumentUpload] = useState(false);
+  const [selectedChatbotForDocs, setSelectedChatbotForDocs] = useState<number | null>(null);
 
   useEffect(() => {
     if (fetchChatbots) {
@@ -241,6 +245,11 @@ const ChatbotManager: React.FC = () => {
     setShowTestModal(true);
   };
 
+  const handleDocuments = (chatbot: any) => {
+    setSelectedChatbotForDocs(chatbot.id);
+    setShowDocumentUpload(true);
+  };
+
   const sendTestMessage = async () => {
     if (!testMessage.trim() || !selectedChatbot) return;
 
@@ -342,6 +351,7 @@ const ChatbotManager: React.FC = () => {
                       <ul className="dropdown-menu">
                         <li><a className="dropdown-item" href="#" onClick={() => handleEdit(chatbot)}><Edit size={14} className="me-2" />Edit</a></li>
                         <li><a className="dropdown-item" href="#" onClick={() => handleTest(chatbot)}><TestTube size={14} className="me-2" />Test</a></li>
+                        <li><a className="dropdown-item" href="#" onClick={() => handleDocuments(chatbot)}><FileText size={14} className="me-2" />Documents</a></li>
                         <li><hr className="dropdown-divider" /></li>
                         <li><a className="dropdown-item text-danger" href="#" onClick={() => handleDelete(chatbot.id)}><Trash2 size={14} className="me-2" />Delete</a></li>
                       </ul>
@@ -565,6 +575,26 @@ const ChatbotManager: React.FC = () => {
             </Toast.Body>
           </Toast>
         </ToastContainer>
+
+        {/* Document Upload Modal */}
+        {selectedChatbotForDocs && (
+          <DocumentUpload
+            show={showDocumentUpload}
+            onHide={() => {
+              setShowDocumentUpload(false);
+              setSelectedChatbotForDocs(null);
+            }}
+            chatbotId={selectedChatbotForDocs}
+            onDocumentUploaded={(document) => {
+              setToast({
+                show: true,
+                message: `Document "${document.title}" uploaded successfully!`,
+                variant: 'success'
+              });
+              setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
+            }}
+          />
+        )}
       </motion.div>
     </Container>
   );

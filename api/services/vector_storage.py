@@ -29,10 +29,13 @@ class VectorStorageService:
         """
         self.settings = settings
         self.client = None
-        self._initialize_client()
+        self._client_initialized = False
 
     def _initialize_client(self):
-        """Initialize ChromaDB client."""
+        """Initialize ChromaDB client lazily."""
+        if self._client_initialized:
+            return
+
         try:
             self.client = chromadb.HttpClient(
                 host=self.settings.chromadb_host, port=self.settings.chromadb_port
@@ -41,6 +44,7 @@ class VectorStorageService:
                 f"Connected to ChromaDB at "
                 f"{self.settings.chromadb_host}:{self.settings.chromadb_port}"
             )
+            self._client_initialized = True
         except Exception as e:
             logger.error(f"Failed to connect to ChromaDB: {e}")
             raise
@@ -54,6 +58,8 @@ class VectorStorageService:
         Returns:
             ChromaDB collection for the chatbot
         """
+        self._initialize_client()  # Ensure client is initialized
+
         collection_name = f"chatbot_{chatbot_id}"
         try:
             # Try to get existing collection
@@ -351,3 +357,73 @@ class VectorStorageService:
                 "chromadb_host": self.settings.chromadb_host,
                 "chromadb_port": self.settings.chromadb_port,
             }
+
+    async def store_document_embedding(
+        self, text_content: str, metadata: Dict[str, Any] = None
+    ) -> str:
+        """
+        Store a single document's embedding.
+
+        Args:
+            text_content: Text content to embed
+            metadata: Document metadata
+
+        Returns:
+            Document ID in vector storage
+        """
+        try:
+            # Get chatbot collection
+            chatbot_id = str(metadata.get("chatbot_id", "default"))
+            collection = self.get_or_create_collection(chatbot_id)
+
+            # Generate embedding
+            embeddings = await self.generate_embeddings([text_content])
+
+            # Generate unique document ID
+            doc_id = str(uuid.uuid4())
+
+            # Store in ChromaDB
+            collection.add(
+                embeddings=embeddings,
+                documents=[text_content],
+                metadatas=[metadata or {}],
+                ids=[doc_id],
+            )
+
+            logger.info(f"Stored document embedding: {doc_id}")
+            return doc_id
+
+        except Exception as e:
+            logger.error(f"Failed to store document embedding: {str(e)}")
+            raise
+
+    async def delete_document(self, document_id: str) -> bool:
+        """
+        Delete a document from vector storage.
+
+        Args:
+            document_id: ID of document to delete
+
+        Returns:
+            True if deleted successfully
+        """
+        try:
+            # We need to find which collection the document is in
+            # For now, we'll try all collections
+            collections = self.client.list_collections()
+
+            for collection in collections:
+                try:
+                    coll = self.client.get_collection(collection.name)
+                    coll.delete(ids=[document_id])
+                    logger.info(f"Deleted document: {document_id}")
+                    return True
+                except Exception:
+                    continue
+
+            logger.warning(f"Document not found in any collection: {document_id}")
+            return False
+
+        except Exception as e:
+            logger.error(f"Failed to delete document: {str(e)}")
+            return False

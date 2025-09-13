@@ -79,8 +79,10 @@ app.include_router(database_router, prefix="/api/database")
 
 # Import and include AI conversation router
 from routes.ai_conversation import router as ai_conversation_router
+from routes.documents import router as documents_router
 
 app.include_router(ai_conversation_router, prefix="/api")
+app.include_router(documents_router, prefix="/api")
 app.include_router(language_router)
 
 
