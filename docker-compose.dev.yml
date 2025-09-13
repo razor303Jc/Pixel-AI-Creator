@@ -75,7 +75,7 @@ services:
       dockerfile: ../docker/frontend/Dockerfile.dev
     container_name: pixel-frontend-dev
     environment:
-      - REACT_APP_API_URL=http://localhost:8002
+      - REACT_APP_API_URL=http://localhost:8002/api
       - REACT_APP_ENVIRONMENT=development
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
