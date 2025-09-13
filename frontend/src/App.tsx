@@ -1,25 +1,20 @@
 import React from 'react';
-// TEMPORARY: Commented out unused imports for auth bypass
-// import { useState } from 'react';
-// import { Spinner } from 'react-bootstrap';
-// import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { Spinner } from 'react-bootstrap';
+import { motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
-// import { useAuth } from './contexts/AuthContext';
+import { useAuth } from './contexts/AuthContext';
 import { ChatbotProvider } from './contexts/ChatbotContext';
-// import LoginForm from './components/auth/LoginForm';
-// import RegisterForm from './components/auth/RegisterForm';
+import LoginForm from './components/auth/LoginForm';
+import RegisterForm from './components/auth/RegisterForm';
 import Dashboard from './components/dashboard/Dashboard';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// Main App Content Component - TEMPORARY: AUTH BYPASS FOR MANUAL TESTING
+// Main App Content Component - AUTHENTICATION RESTORED
 const AppContent = () => {
-  // const { isAuthenticated, isLoading } = useAuth();
-  // const [showRegister, setShowRegister] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth();
+  const [showRegister, setShowRegister] = useState(false);
 
-  // TEMPORARY: Skip authentication checks - go directly to dashboard
-  // TODO: Re-enable authentication once auth system is fixed
-  
-  /*
   // Show loading spinner while checking authentication
   if (isLoading) {
     return (
@@ -51,9 +46,8 @@ const AppContent = () => {
       <LoginForm onSwitchToRegister={() => setShowRegister(true)} />
     );
   }
-  */
 
-  // Show dashboard directly (bypassing authentication for manual testing)
+  // Show dashboard for authenticated users
   return (
     <ChatbotProvider>
       <Dashboard />

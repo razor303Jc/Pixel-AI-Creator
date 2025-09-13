@@ -7,7 +7,7 @@ import axios from "axios";
 
 // API Configuration
 const API_BASE_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+  process.env.REACT_APP_API_URL || "http://localhost:8002/api";
 const API_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
 
@@ -23,7 +23,7 @@ const apiClient = axios.create({
 // Token management utilities
 const tokenManager = {
   getToken: () => localStorage.getItem("access_token"),
-  setToken: (token) => localStorage.getItem("access_token", token),
+  setToken: (token) => localStorage.setItem("access_token", token),
   removeToken: () => localStorage.removeItem("access_token"),
   getRefreshToken: () => localStorage.getItem("refresh_token"),
   setRefreshToken: (token) => localStorage.setItem("refresh_token", token),
@@ -130,15 +130,10 @@ export const apiService = {
   // Authentication endpoints
   auth: {
     login: async (credentials) => {
-      const formData = new FormData();
-      formData.append("username", credentials.email);
-      formData.append("password", credentials.password);
-
       const response = await retryRequest(() =>
-        apiClient.post("/auth/token", formData, {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
+        apiClient.post("/auth/login", {
+          email: credentials.email,
+          password: credentials.password,
         })
       );
 
