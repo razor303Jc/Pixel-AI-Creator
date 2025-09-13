@@ -1,0 +1,272 @@
+# ===================================
+# PIXEL AI CREATOR - COMPREHENSIVE .GITIGNORE
+# Post VSCode Crash Recovery Setup
+# ===================================
+
+# ============= PYTHON =============
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+api_venv/
+test-env/
+env/
+ENV/
+env.bak/
+venv.bak/
+api/test_env/
+
+# ============= NODE.JS =============
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn/
+.pnp.*
+.yarn-integrity
+
+# Frontend build artifacts
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
+frontend/.nuxt/
+frontend/.vuepress/dist/
+
+# ============= ENVIRONMENT =============
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+.env.production
+.env.backup
+.env.advanced-auth
+
+# ============= DEVELOPMENT TOOLS =============
+# IDE and Editors
+.vscode/
+!.vscode/settings.json.template
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+.sublime-project
+.sublime-workspace
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+*.cover
+*.py,cover
+test-results/
+test-results-*.json
+test-report.html
+playwright-report/
+test-screenshots/
+
+# ============= LOGS & MONITORING =============
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# ============= DATABASE =============
+*.db
+*.sqlite3
+*.sqlite
+database/data/
+backups/*.sql
+backups/*.dump
+
+# ChromaDB
+chroma/
+chromadb/
+.chroma/
+
+# ============= DOCKER =============
+.dockerignore
+docker-compose.override.yml
+docker/logs/
+docker/data/
+
+# ============= AI & ML =============
+# Model files
+*.pkl
+*.joblib
+*.h5
+*.hdf5
+models/
+trained-models/
+checkpoints/
+
+# Generated content
+generated-bots/
+ai-outputs/
+training-data/
+embeddings/
+
+# Vector databases
+faiss_index/
+pinecone_cache/
+
+# ============= FRONTEND SPECIFIC =============
+# React/Next.js
+.next/
+out/
+.vercel/
+
+# Vue/Nuxt
+.nuxt/
+dist/
+
+# Build tools
+.parcel-cache/
+.cache/
+.temp/
+
+# ============= BACKEND SPECIFIC =============
+# FastAPI/Uvicorn
+.uvicorn/
+instance/
+migrations/versions/*.py
+!migrations/versions/__init__.py
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# ============= CLOUD & DEPLOYMENT =============
+# Railway
+railway.json.local
+
+# AWS
+.aws/
+
+# Google Cloud
+.gcloud/
+service-account-key.json
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# ============= SECURITY =============
+# Keys and certificates
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+private/
+
+# API Keys (double protection)
+*api-key*
+*secret*
+*token*
+*password*
+
+# ============= TEMPORARY & CACHE =============
+*.tmp
+*.temp
+*.cache
+.cache/
+.temp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ============= PROJECT SPECIFIC =============
+# Chat transcripts
+chat-history/
+conversation-logs/
+
+# User uploads
+uploads/
+user-content/
+temp-files/
+
+# Performance monitoring
+performance-logs/
+metrics/
+
+# Backup directories
+backup/
+backups/local/
+
+# ============= DEVELOPMENT =============
+# Package manager lockfiles (keep package-lock.json but ignore yarn.lock)
+yarn.lock
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local development overrides
+docker-compose.local.yml
+config.local.json
+
+# ============= LARGE FILES =============
+# Media files that shouldn't be in git
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.large
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ============= END GITIGNORE =============

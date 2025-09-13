@@ -7,6 +7,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   testMatch: [
+    "**/test_frontend_comprehensive_ui.spec.js",
+    "**/test_chat_interface.spec.js",
     "**/test_frontend_comprehensive_playwright.spec.js",
     "**/test_frontend_complete_qa.spec.js",
     "**/test_main_app_features.spec.js",

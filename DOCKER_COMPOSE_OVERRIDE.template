@@ -1,0 +1,84 @@
+# PIXEL AI CREATOR - DOCKER COMPOSE OVERRIDE
+# Post VSCode Crash Recovery
+# Copy this to docker-compose.override.yml for local development
+
+version: '3.8'
+
+services:
+  # Frontend service overrides
+  frontend:
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3002:3000"
+    command: npm run dev
+    restart: unless-stopped
+    
+  # Backend service overrides  
+  backend:
+    environment:
+      - FASTAPI_ENV=development
+      - DEBUG=true
+      - RELOAD=true
+    volumes:
+      - ./api:/app
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+    ports:
+      - "8002:8000"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+    
+  # Database service for development
+  database:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=pixel_ai_creator
+      - POSTGRES_USER=developer
+      - POSTGRES_PASSWORD=devpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    
+  # Redis for caching and sessions
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    
+  # Nginx for local SSL and routing
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: pixel-ai-network
+    driver: bridge
