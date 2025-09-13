@@ -13,6 +13,7 @@ export default defineConfig({
     "**/test_frontend_complete_qa.spec.js",
     "**/test_main_app_features.spec.js",
     "**/test_dashboard_features.spec.js",
+    "**/test_comprehensive_frontend_ui_flow.spec.js",
   ],
 
   /* Run tests in files in parallel */
