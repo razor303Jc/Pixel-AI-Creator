@@ -48,7 +48,10 @@ async def create_conversation(
     project_query = select(Project).where(
         and_(
             Project.id == conversation_data.project_id,
-            or_(Project.user_id == current_user["id"], current_user["role"] == "admin"),
+            or_(
+                Project.user_id == current_user["user_id"],
+                current_user["role"] == "admin",
+            ),
         )
     )
     project_result = await db.execute(project_query)
@@ -62,7 +65,7 @@ async def create_conversation(
     # Create conversation
     conversation = Conversation(
         project_id=conversation_data.project_id,
-        user_id=current_user["id"],
+        user_id=current_user["user_id"],
         title=conversation_data.title or f"Conversation with {project.name}",
         status=ConversationStatus.ACTIVE,
         extra_data=conversation_data.metadata or {},
@@ -108,7 +111,10 @@ async def list_conversations(
     """
     # Build query with user access control
     query = select(Conversation).where(
-        or_(Conversation.user_id == current_user["id"], current_user["role"] == "admin")
+        or_(
+            Conversation.user_id == current_user["user_id"],
+            current_user["role"] == "admin",
+        )
     )
 
     # Apply filters
@@ -188,7 +194,7 @@ async def get_conversation(
         and_(
             Conversation.id == conversation_id,
             or_(
-                Conversation.user_id == current_user["id"],
+                Conversation.user_id == current_user["user_id"],
                 current_user["role"] == "admin",
             ),
         )
@@ -272,7 +278,7 @@ async def update_conversation(
         and_(
             Conversation.id == conversation_id,
             or_(
-                Conversation.user_id == current_user["id"],
+                Conversation.user_id == current_user["user_id"],
                 current_user["role"] == "admin",
             ),
         )
@@ -335,7 +341,7 @@ async def update_conversation_status(
         and_(
             Conversation.id == conversation_id,
             or_(
-                Conversation.user_id == current_user["id"],
+                Conversation.user_id == current_user["user_id"],
                 current_user["role"] == "admin",
             ),
         )
@@ -394,7 +400,7 @@ async def delete_conversation(
         and_(
             Conversation.id == conversation_id,
             or_(
-                Conversation.user_id == current_user["id"],
+                Conversation.user_id == current_user["user_id"],
                 current_user["role"] == "admin",
             ),
         )
@@ -454,7 +460,7 @@ async def create_message(
         and_(
             Conversation.id == conversation_id,
             or_(
-                Conversation.user_id == current_user["id"],
+                Conversation.user_id == current_user["user_id"],
                 current_user["role"] == "admin",
             ),
         )
@@ -520,7 +526,7 @@ async def get_conversation_messages(
         and_(
             Conversation.id == conversation_id,
             or_(
-                Conversation.user_id == current_user["id"],
+                Conversation.user_id == current_user["user_id"],
                 current_user["role"] == "admin",
             ),
         )
@@ -581,7 +587,7 @@ async def get_conversation_stats(
         and_(
             Conversation.id == conversation_id,
             or_(
-                Conversation.user_id == current_user["id"],
+                Conversation.user_id == current_user["user_id"],
                 current_user["role"] == "admin",
             ),
         )
@@ -679,7 +685,7 @@ async def get_conversations_dashboard(
         and_(
             Conversation.created_at >= since_date,
             or_(
-                Conversation.user_id == current_user["id"],
+                Conversation.user_id == current_user["user_id"],
                 current_user["role"] == "admin",
             ),
         )
@@ -701,7 +707,7 @@ async def get_conversations_dashboard(
             Message.conversation_id.in_(
                 select(Conversation.id).where(
                     or_(
-                        Conversation.user_id == current_user["id"],
+                        Conversation.user_id == current_user["user_id"],
                         current_user["role"] == "admin",
                     )
                 )

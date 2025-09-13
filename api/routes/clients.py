@@ -69,7 +69,9 @@ async def create_client(
         await db.commit()
         await db.refresh(new_client)
 
-        logger.info(f"Client created: {new_client.email} by user {current_user.email}")
+        logger.info(
+            f"Client created: {new_client.email} by user {current_user['email']}"
+        )
         return new_client
 
     except HTTPException:
@@ -129,7 +131,7 @@ async def list_clients(
         result = await db.execute(query)
         clients = result.scalars().all()
 
-        logger.info(f"Listed {len(clients)} clients for user {current_user.email}")
+        logger.info(f"Listed {len(clients)} clients for user {current_user['email']}")
         return clients
 
     except Exception as e:
@@ -158,7 +160,7 @@ async def get_client(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Client not found"
             )
 
-        logger.info(f"Retrieved client {client_id} by user {current_user.email}")
+        logger.info(f"Retrieved client {client_id} by user {current_user['email']}")
         return client
 
     except HTTPException:
@@ -217,7 +219,7 @@ async def update_client(
             # Refresh client
             await db.refresh(client)
 
-        logger.info(f"Updated client {client_id} by user {current_user.email}")
+        logger.info(f"Updated client {client_id} by user {current_user['email']}")
         return client
 
     except HTTPException:
@@ -270,7 +272,8 @@ async def update_client_status(
         await db.refresh(client)
 
         logger.info(
-            f"Updated client {client_id} status to {status_data.status} by user {current_user.email}"
+            f"Updated client {client_id} status to {status_data.status} "
+            f"by user {current_user['email']}"
         )
         return client
 
@@ -313,7 +316,7 @@ async def delete_client(
         )
         await db.commit()
 
-        logger.info(f"Soft deleted client {client_id} by user {current_user.email}")
+        logger.info(f"Soft deleted client {client_id} by user {current_user['email']}")
         return {"message": "Client deleted successfully"}
 
     except HTTPException:
@@ -358,7 +361,7 @@ async def get_client_stats(
             "generated_at": datetime.utcnow(),
         }
 
-        logger.info(f"Retrieved client stats for user {current_user.email}")
+        logger.info(f"Retrieved client stats for user {current_user['email']}")
         return stats
 
     except Exception as e:
