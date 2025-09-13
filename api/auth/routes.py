@@ -84,15 +84,19 @@ async def register_user(
 
         db.add(new_user)
         await db.commit()
-        await db.refresh(new_user)
+        # await db.refresh(new_user)  # Temporarily disabled - causes mapper issues
+
+        # Get the user ID by querying instead of using refresh
+        result = await db.execute(select(User).where(User.email == user_data.email))
+        created_user = result.scalar_one()
 
         logger.info(f"New user registered: {user_data.email}")
 
         return UserRegistrationResponse(
             message="User registered successfully",
-            user_id=new_user.id,
-            email=new_user.email,
-            role=UserRole(new_user.role),
+            user_id=created_user.id,
+            email=created_user.email,
+            role=UserRole(created_user.role),
         )
 
     except HTTPException:

@@ -32,6 +32,34 @@
 
 ## 🔴 CRITICAL PRIORITY - Week 1 (Sept 11-18)
 
+### 🚨 URGENT: Authentication System Recovery (IMMEDIATE)
+
+- [ ] **SQLAlchemy model cleanup (1-2 hours)** 🔴 CRITICAL
+
+  - [ ] Resolve SQLAlchemy mapper conflicts between User model definitions
+  - [ ] Consolidate User models in api/core/database.py and api/models/database_schema.py
+  - [ ] Fix "User(users) has no property 'mfa_configurations'" error
+  - [ ] Remove conflicting relationship definitions from disabled advanced models
+  - [ ] Clear Python bytecode cache and restart containers after cleanup
+
+- [ ] **Basic authentication restoration (immediate priority)** 🔴 CRITICAL
+
+  - [ ] Restore basic user registration endpoint functionality
+  - [ ] Fix login endpoint 500 errors
+  - [ ] Ensure JWT token generation works with cleaned User model
+  - [ ] Test basic auth flow: register → login → token validation
+  - [ ] Verify profile management endpoints work
+
+- [ ] **Advanced feature re-implementation (future enhancement)** 🟡 HIGH
+  - [ ] Re-enable MFA functionality after basic auth is stable
+  - [ ] Restore social login integration (Google, GitHub, etc.)
+  - [ ] Re-implement session management and authorization services
+  - [ ] Add back enhanced security features once core auth is solid
+
+**Owner**: Backend Team  
+**Est. Hours**: 3-4 hours for critical fixes, 8-12 hours for advanced features  
+**Status**: 🚨 BROKEN - Authentication completely non-functional, manual test user available
+
 ### ChromaDB Integration Fix ✅ COMPLETED
 
 - [x] **Debug ChromaDB container health issues** ✅
@@ -52,27 +80,37 @@
 **Est. Hours**: 18 hours (COMPLETED)  
 **Status**: ✅ COMPLETED - ChromaDB fully operational
 
-### Authentication System Implementation ✅ COMPLETED
+### Authentication System Implementation 🚨 BROKEN - NEEDS RECOVERY
 
-- [x] **JWT token authentication** ✅
+**CURRENT STATUS: CRITICAL SYSTEM FAILURE**
+
+- ❌ Registration endpoint returning 500 errors
+- ❌ Login endpoint completely non-functional
+- ❌ SQLAlchemy mapper conflicts preventing user operations
+- ✅ Manual test user available: test@manual.com / TestPass123!
+- ✅ Frontend fully operational (can access with direct navigation)
+
+**PREVIOUSLY IMPLEMENTED (Now Broken):**
+
+- [x] **JWT token authentication** ✅ (Infrastructure exists, but broken by model conflicts)
   - ✅ Created `auth/jwt.py` utility module with JWTHandler and PasswordHandler
   - ✅ Implemented token generation and validation with HS256 algorithm
   - ✅ Added comprehensive middleware for protected routes
-- [x] **User registration/login endpoints** ✅
-  - ✅ `POST /api/auth/register` - User signup with email validation
-  - ✅ `POST /api/auth/login` - User authentication with JWT tokens
-  - ✅ `GET /api/auth/profile` - Current user profile info
-  - ✅ `PUT /api/auth/profile` - Profile update functionality
-  - ✅ `POST /api/auth/change-password` - Secure password change
-  - ✅ `POST /api/auth/verify-token` - Token validation
-- [x] **Role-based access control** ✅
-  - ✅ Defined user roles (admin, client, user) with UserRole enum
-  - ✅ Implemented permission decorators and middleware
-  - ✅ Added role validation to API endpoints with ownership checks
+- [x] **User registration/login endpoints** ❌ (Endpoints exist but return 500 errors)
+  - ❌ `POST /api/auth/register` - BROKEN: SQLAlchemy mapper error
+  - ❌ `POST /api/auth/login` - BROKEN: User model conflicts
+  - ❌ `GET /api/auth/profile` - BROKEN: Relationship mapping issues
+  - ❌ `PUT /api/auth/profile` - BROKEN: Model inconsistencies
+  - ❌ `POST /api/auth/change-password` - BROKEN: Database mapping errors
+  - ❌ `POST /api/auth/verify-token` - BROKEN: User retrieval failures
+- [x] **Role-based access control** ❌ (Disabled due to model conflicts)
+  - ❌ User roles broken due to SQLAlchemy mapper issues
+  - ❌ Permission decorators disabled to isolate core problems
+  - ❌ Role validation non-functional
 
 **Owner**: Backend Team  
-**Est. Hours**: 24-28 hours (COMPLETED)  
-**Status**: ✅ COMPLETED - Full JWT authentication system operational
+**Est. Hours**: 24-28 hours (PREVIOUSLY COMPLETED, NOW REQUIRES URGENT RECOVERY)  
+**Status**: 🚨 CRITICAL FAILURE - System requires immediate SQLAlchemy model cleanup
 
 ### Core API Endpoint Completion
 

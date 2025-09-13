@@ -10,7 +10,7 @@ from typing import Dict, List, Any, Optional
 from pydantic import BaseModel
 
 from auth.middleware import get_current_user
-from models.user import User
+from models.database_schema import User
 from services.language_service import LanguageService, LocalizationConfig
 
 router = APIRouter(prefix="/api/language", tags=["language"])

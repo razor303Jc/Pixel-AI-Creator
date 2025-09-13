@@ -1,0 +1,33 @@
+# Development Dockerfile for React Frontend
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Install dependencies for file watching
+RUN apk add --no-cache \
+    git \
+    curl
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Install development dependencies
+RUN npm install -g nodemon
+
+# Copy source code (this will be overridden by volume mount in dev)
+COPY . .
+
+# Set environment variables for development
+ENV NODE_ENV=development
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+
+# Expose port
+EXPOSE 3000
+
+# Development command with hot reloading
+CMD ["npm", "start"]

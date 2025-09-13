@@ -16,7 +16,7 @@ from enum import Enum
 
 from .jwt import verify_user_token
 from core.database import get_db
-from models.user import User
+from models.database_schema import User
 
 
 class UserRole(str, Enum):

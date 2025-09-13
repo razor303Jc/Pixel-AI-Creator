@@ -9,6 +9,8 @@ export default defineConfig({
   testMatch: [
     "**/test_frontend_comprehensive_playwright.spec.js",
     "**/test_frontend_complete_qa.spec.js",
+    "**/test_main_app_features.spec.js",
+    "**/test_dashboard_features.spec.js",
   ],
 
   /* Run tests in files in parallel */

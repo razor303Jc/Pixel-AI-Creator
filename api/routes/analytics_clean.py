@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Dict, Any
 
 from auth.middleware import get_current_user
-from models.user import User
+from models.database_schema import User
 from services.analytics_service_sync import AnalyticsService
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])

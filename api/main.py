@@ -31,10 +31,12 @@ from routes.language import router as language_router
 
 # from routes.performance import router as performance_router  # Temporarily disabled due to cache issues
 from routes.database_simple import router as database_router
-from routes.sessions import router as sessions_router
-from routes.sessions_test import router as sessions_test_router
+
+# from routes.sessions import router as sessions_router  # Temporarily disabled - causes DB conflicts
+# from routes.sessions_test import router as sessions_test_router  # Temporarily disabled - causes DB conflicts
 from auth.routes import router as auth_router
-from auth.enhanced_routes import router as enhanced_auth_router
+
+# from auth.enhanced_routes import router as enhanced_auth_router  # Temporarily disabled
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -68,9 +70,9 @@ app.include_router(chatbots_router, prefix="/api")
 app.include_router(conversations_router, prefix="/api")
 app.include_router(analytics_router)
 app.include_router(auth_router, prefix="/api")
-app.include_router(enhanced_auth_router, prefix="/api")
-app.include_router(sessions_router, prefix="/api")
-app.include_router(sessions_test_router, prefix="/api")
+# app.include_router(enhanced_auth_router, prefix="/api")  # Temporarily disabled
+# app.include_router(sessions_router, prefix="/api")  # Temporarily disabled - causes DB conflicts
+# app.include_router(sessions_test_router, prefix="/api")  # Temporarily disabled - causes DB conflicts
 # Temporarily disabled due to cache issues:
 # app.include_router(performance_router, prefix="/api")
 app.include_router(database_router, prefix="/api/database")
