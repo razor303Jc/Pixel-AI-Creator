@@ -1,7 +1,8 @@
 import React, { useState, useContext } from 'react';
 import { Container, Row, Col, Card, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { UserPlus, Mail, Lock, User, Building } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Building, CheckCircle, AlertTriangle, Eye, EyeOff, Shield } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { AuthContext } from '../../contexts/AuthContext';
 
 interface RegisterFormProps {
@@ -32,19 +33,29 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [registrationStep, setRegistrationStep] = useState<'form' | 'success' | 'error'>('form');
 
   const authContext = useContext(AuthContext);
   const register = authContext?.register;
 
-  // Validation functions
+  // Enhanced validation functions
   const validateEmail = (email: string): string | undefined => {
     if (!email) return 'Email is required';
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    
+    // Common email domain validation
+    const commonDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'aol.com'];
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (domain && commonDomains.indexOf(domain) === -1 && domain.indexOf('.') === -1) {
+      return 'Please enter a valid email domain (e.g., @gmail.com)';
+    }
+    
     return undefined;
   };
 
@@ -97,10 +108,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     }));
 
     // Mark field as touched for validation feedback
-    setTouchedFields(prev => new Set([...prev, name]));
+    setTouchedFields(prev => new Set([...Array.from(prev), name]));
 
-    // Clear general error when user starts typing
+    // Clear general error and success when user starts typing
     if (error) setError('');
+    if (success) setSuccess('');
 
     // Real-time validation
     const newErrors = { ...validationErrors };
@@ -151,6 +163,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setSuccess('');
+    setRegistrationStep('form');
 
     // Mark all fields as touched to show validation errors
     const allFields = new Set(['email', 'password', 'confirmPassword', 'firstName', 'lastName']);
@@ -180,12 +194,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     if (Object.keys(errors).length > 0) {
       setIsLoading(false);
       setError('Please fix the validation errors below');
+      setRegistrationStep('error');
       return;
     }
 
     if (!register) {
       setError('Authentication service not available');
       setIsLoading(false);
+      setRegistrationStep('error');
       return;
     }
 
@@ -200,9 +216,52 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
       };
 
       await register(registrationData);
-      // Navigation will be handled by AuthContext
+      
+      // Show success toast and message
+      toast.success(`🎉 Welcome ${formData.firstName}! Account created successfully!`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      
+      setSuccess(`Welcome to Pixel AI Creator, ${formData.firstName}! Your account has been created successfully and you're now logged in. You can start creating amazing AI-powered chatbots right away!`);
+      setRegistrationStep('success');
+      
+      // Clear form data for security
+      setFormData({
+        email: '',
+        password: '',
+        confirmPassword: '',
+        firstName: '',
+        lastName: '',
+        companyName: ''
+      });
+      setTouchedFields(new Set());
+      setValidationErrors({});
+      
+      // Redirect to dashboard after showing success message for 3 seconds
+      setTimeout(() => {
+        // Navigation will be handled by AuthContext state change
+      }, 3000);
+      
     } catch (err: any) {
+      console.error('Registration error:', err);
+      
+      // Show error toast
+      toast.error(err.message || 'Registration failed. Please try again.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      
       setError(err.message || 'Registration failed. Please try again.');
+      setRegistrationStep('error');
     } finally {
       setIsLoading(false);
     }
@@ -254,7 +313,51 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                       transition={{ duration: 0.3 }}
                     >
                       <Alert variant="danger" className="mb-3">
-                        {error}
+                        <div className="d-flex align-items-start">
+                          <div className="me-2">
+                            <AlertTriangle size={20} className="text-danger" />
+                          </div>
+                          <div>
+                            <strong>Registration Failed</strong>
+                            <div className="mt-1">{error}</div>
+                          </div>
+                        </div>
+                      </Alert>
+                    </motion.div>
+                  )}
+
+                  {success && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Alert variant="success" className="mb-3" style={{ 
+                        background: 'linear-gradient(45deg, #d4edda, #c3e6cb)',
+                        border: '2px solid #28a745',
+                        borderRadius: '12px'
+                      }}>
+                        <div className="d-flex align-items-start">
+                          <div className="me-3">
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ delay: 0.1, duration: 0.3 }}
+                            >
+                              <CheckCircle size={24} className="text-success" />
+                            </motion.div>
+                          </div>
+                          <div>
+                            <motion.div
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: 0.2, duration: 0.3 }}
+                            >
+                              <strong className="text-success">Account Created Successfully!</strong>
+                              <div className="mt-1 text-muted">{success}</div>
+                            </motion.div>
+                          </div>
+                        </div>
                       </Alert>
                     </motion.div>
                   )}
@@ -281,7 +384,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               required
                               className="py-3"
                               isInvalid={touchedFields.has('firstName') && !!validationErrors.firstName}
-                              isValid={touchedFields.has('firstName') && !validationErrors.firstName && formData.firstName}
+                              isValid={touchedFields.has('firstName') && !validationErrors.firstName && !!formData.firstName}
                               style={{
                                 borderRadius: '10px',
                                 border: touchedFields.has('firstName') && validationErrors.firstName 
@@ -297,7 +400,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                                 {validationErrors.firstName}
                               </Form.Control.Feedback>
                             )}
-                          </Form.Group>
                           </Form.Group>
                         </motion.div>
                       </Col>
@@ -321,7 +423,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               required
                               className="py-3"
                               isInvalid={touchedFields.has('lastName') && !!validationErrors.lastName}
-                              isValid={touchedFields.has('lastName') && !validationErrors.lastName && formData.lastName}
+                              isValid={touchedFields.has('lastName') && !validationErrors.lastName && !!formData.lastName}
                               style={{
                                 borderRadius: '10px',
                                 border: touchedFields.has('lastName') && validationErrors.lastName 
@@ -361,7 +463,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                           required
                           className="py-3"
                           isInvalid={touchedFields.has('email') && !!validationErrors.email}
-                          isValid={touchedFields.has('email') && !validationErrors.email && formData.email}
+                          isValid={touchedFields.has('email') && !validationErrors.email && !!formData.email}
                           style={{
                             borderRadius: '10px',
                             border: touchedFields.has('email') && validationErrors.email 
@@ -423,26 +525,37 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               <Lock size={16} className="me-2" />
                               Password
                             </Form.Label>
-                            <Form.Control
-                              type="password"
-                              name="password"
-                              placeholder="Enter password"
-                              value={formData.password}
-                              onChange={handleInputChange}
-                              required
-                              className="py-3"
-                              isInvalid={touchedFields.has('password') && !!validationErrors.password}
-                              isValid={touchedFields.has('password') && !validationErrors.password && formData.password}
-                              style={{
-                                borderRadius: '10px',
-                                border: touchedFields.has('password') && validationErrors.password 
-                                  ? '2px solid #dc3545' 
-                                  : touchedFields.has('password') && !validationErrors.password && formData.password
-                                  ? '2px solid #28a745'
-                                  : '2px solid #e9ecef',
-                                fontSize: '16px'
-                              }}
-                            />
+                            <div className="position-relative">
+                              <Form.Control
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                placeholder="Enter password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                required
+                                className="py-3 pe-5"
+                                isInvalid={touchedFields.has('password') && !!validationErrors.password}
+                                isValid={touchedFields.has('password') && !validationErrors.password && !!formData.password}
+                                style={{
+                                  borderRadius: '10px',
+                                  border: touchedFields.has('password') && validationErrors.password 
+                                    ? '2px solid #dc3545' 
+                                    : touchedFields.has('password') && !validationErrors.password && formData.password
+                                    ? '2px solid #28a745'
+                                    : '2px solid #e9ecef',
+                                  fontSize: '16px'
+                                }}
+                              />
+                              <Button
+                                variant="link"
+                                className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
+                                style={{ zIndex: 10 }}
+                                onClick={() => setShowPassword(!showPassword)}
+                                type="button"
+                              >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </Button>
+                            </div>
                             {touchedFields.has('password') && validationErrors.password && (
                               <Form.Control.Feedback type="invalid" style={{ display: 'block' }}>
                                 {validationErrors.password}
@@ -490,26 +603,37 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               <Lock size={16} className="me-2" />
                               Confirm Password
                             </Form.Label>
-                            <Form.Control
-                              type="password"
-                              name="confirmPassword"
-                              placeholder="Confirm password"
-                              value={formData.confirmPassword}
-                              onChange={handleInputChange}
-                              required
-                              className="py-3"
-                              isInvalid={touchedFields.has('confirmPassword') && !!validationErrors.confirmPassword}
-                              isValid={touchedFields.has('confirmPassword') && !validationErrors.confirmPassword && formData.confirmPassword}
-                              style={{
-                                borderRadius: '10px',
-                                border: touchedFields.has('confirmPassword') && validationErrors.confirmPassword 
-                                  ? '2px solid #dc3545' 
-                                  : touchedFields.has('confirmPassword') && !validationErrors.confirmPassword && formData.confirmPassword
-                                  ? '2px solid #28a745'
-                                  : '2px solid #e9ecef',
-                                fontSize: '16px'
-                              }}
-                            />
+                            <div className="position-relative">
+                              <Form.Control
+                                type={showConfirmPassword ? "text" : "password"}
+                                name="confirmPassword"
+                                placeholder="Confirm password"
+                                value={formData.confirmPassword}
+                                onChange={handleInputChange}
+                                required
+                                className="py-3 pe-5"
+                                isInvalid={touchedFields.has('confirmPassword') && !!validationErrors.confirmPassword}
+                                isValid={touchedFields.has('confirmPassword') && !validationErrors.confirmPassword && !!formData.confirmPassword}
+                                style={{
+                                  borderRadius: '10px',
+                                  border: touchedFields.has('confirmPassword') && validationErrors.confirmPassword 
+                                    ? '2px solid #dc3545' 
+                                    : touchedFields.has('confirmPassword') && !validationErrors.confirmPassword && formData.confirmPassword
+                                    ? '2px solid #28a745'
+                                    : '2px solid #e9ecef',
+                                  fontSize: '16px'
+                                }}
+                              />
+                              <Button
+                                variant="link"
+                                className="position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent"
+                                style={{ zIndex: 10 }}
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                type="button"
+                              >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                              </Button>
+                            </div>
                             {touchedFields.has('confirmPassword') && validationErrors.confirmPassword && (
                               <Form.Control.Feedback type="invalid" style={{ display: 'block' }}>
                                 {validationErrors.confirmPassword}
@@ -551,7 +675,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               aria-hidden="true"
                               className="me-2"
                             />
-                            Creating Account...
+                            {registrationStep === 'form' ? 'Creating Account...' : 
+                             registrationStep === 'success' ? 'Logging You In...' : 'Processing...'}
                           </>
                         ) : (
                           <>
@@ -563,10 +688,23 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                     </motion.div>
                   </Form>
 
+                  {/* Security Badge */}
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.0, duration: 0.5 }}
+                    className="text-center mt-3 mb-3"
+                  >
+                    <div className="d-flex align-items-center justify-content-center text-muted small">
+                      <Shield size={16} className="me-2 text-success" />
+                      <span>Your data is encrypted and secure</span>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.1, duration: 0.5 }}
                     className="text-center mt-4"
                   >
                     <p className="text-muted mb-0">

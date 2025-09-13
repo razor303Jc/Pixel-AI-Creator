@@ -140,17 +140,23 @@ services:
       - pixel-network
     restart: unless-stopped
 
-  # React Frontend  
+  # React Frontend (Development Mode)
   frontend:
     build:
       context: ./frontend
-      dockerfile: ../docker/frontend/Dockerfile
+      dockerfile: ../docker/frontend/Dockerfile.dev
     container_name: pixel-frontend
     ports:
-      - "3002:80"
+      - "3002:3000"
     environment:
       - REACT_APP_API_URL=http://localhost:8002
-      - REACT_APP_ENVIRONMENT=production
+      - REACT_APP_ENVIRONMENT=development
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - api
     networks:
