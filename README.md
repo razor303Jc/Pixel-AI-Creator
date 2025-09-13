@@ -1,31 +1,42 @@
-# Pixel AI Creator - AI Assistant Generation Platform
+# Pixel-AI-Creator 🤖✨
 
-🤖 **Meet Pixel**: The AI that creates custom AI assistants for your clients
+> **AI-powered chatbot creation platform with document processing, vector storage, and comprehensive user management**
 
-## 🎯 Mission
+[![GitHub repo](https://img.shields.io/badge/GitHub-Pixel--AI--Creator-blue?logo=github)](https://github.com/razor303Jc/Pixel-AI-Creator)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](https://docker.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Framework-green?logo=fastapi)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-Frontend-blue?logo=react)](https://reactjs.org)
 
-Pixel AI Creator is a containerized platform that automatically generates custom chatbots and AI assistants by:
+## 🚀 Overview
 
-1. **🔍 Web Intelligence**: Analyzing client websites and social media
-2. **💬 Interactive Q&A**: Conducting client consultation sessions
-3. **🧠 Context Building**: Understanding business needs and personality
-4. **🤖 AI Generation**: Creating tailored chatbots and assistants
-5. **🚀 Auto-Deployment**: Delivering production-ready solutions
+Pixel-AI-Creator is a comprehensive platform for creating, managing, and deploying AI-powered chatbots. Built with modern technologies and designed for scalability, it provides a complete solution for businesses wanting to implement intelligent conversational AI.
 
-## ⚡ **NEW: Razorflow-AI Integration**
+## ✨ Key Features
 
-**Automated AI Assistant Suite with Queue-Based Client Builds**
+### 🤖 **AI-Powered Conversations**
+- **OpenAI Integration**: Advanced GPT-4o-mini powered responses
+- **Context Management**: Intelligent conversation threading
+- **Customizable Personalities**: Tailored chatbot behaviors
+- **Real-time Processing**: Instant response generation
 
-### 🎯 **Default Assistant Templates**
+### � **Document Processing System**
+- **Multi-Format Support**: PDF, DOCX, TXT file processing
+- **Drag-and-Drop Interface**: Modern file upload experience
+- **Text Extraction**: Automated content analysis
+- **Vector Storage**: ChromaDB integration for semantic search
+- **Knowledge Base**: Document-powered chatbot responses
 
-- ✅ **Customer Service Bot**: 24/7 support automation ($2,500)
-- ✅ **Lead Qualification Assistant**: Sales automation ($7,500)
-- ✅ **Appointment Scheduler**: Calendar management ($3,500)
-- ✅ **Product Recommendation Engine**: E-commerce AI ($9,500)
-- ✅ **Social Media Manager**: Content automation ($8,500)
-- ✅ **Restaurant Assistant**: Food service automation ($4,500)
+### 👥 **User Management**
+- **Complete Authentication**: JWT-based secure login system
+- **Profile Management**: Full user account control
+- **Role-Based Access**: Secure permission system
+- **Account Settings**: Password management and profile updates
 
-### 🚀 **Quick Deploy Commands**
+### 🏗️ **Platform Management**
+- **Client Management**: Multi-tenant client organization
+- **Chatbot Creation**: Visual chatbot builder
+- **Analytics Dashboard**: Performance insights and metrics
+- **API Endpoints**: Complete REST API for all operations
 
 ```bash
 # Setup complete system
