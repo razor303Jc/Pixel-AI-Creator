@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useChatbot } from '../../contexts/ChatbotContext';
+import AccountSettings from '../auth/AccountSettings';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Interface definitions for form data
@@ -91,6 +92,7 @@ const Dashboard = () => {
   const [newItemData, setNewItemData] = useState<ClientFormData | ChatbotFormData>({});
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [showProfileSettings, setShowProfileSettings] = useState(false);
 
   // Load data on component mount
   useEffect(() => {
@@ -226,7 +228,9 @@ const Dashboard = () => {
                   <small className="text-muted">{user?.email}</small>
                 </NavDropdown.Item>
                 <NavDropdown.Divider />
-                <NavDropdown.Item>Profile Settings</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => setShowProfileSettings(true)}>
+                  Profile Settings
+                </NavDropdown.Item>
                 <NavDropdown.Item onClick={logout} className="text-danger">
                   Logout
                 </NavDropdown.Item>
@@ -618,6 +622,21 @@ const Dashboard = () => {
             Create {createType === 'client' ? 'Client' : 'Assistant'}
           </Button>
         </Modal.Footer>
+      </Modal>
+
+      {/* Profile Settings Modal */}
+      <Modal 
+        show={showProfileSettings} 
+        onHide={() => setShowProfileSettings(false)}
+        size="lg"
+        centered
+      >
+        <Modal.Header closeButton className="border-0">
+          <Modal.Title>Profile Settings</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="p-0">
+          <AccountSettings />
+        </Modal.Body>
       </Modal>
 
       {/* Toast Notifications */}

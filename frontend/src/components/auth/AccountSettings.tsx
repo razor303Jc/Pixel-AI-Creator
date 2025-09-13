@@ -111,25 +111,39 @@ const AccountSettings: React.FC = () => {
         'Authorization': `Bearer ${token}`
       };
 
-      const [profileRes, securityRes, notificationsRes] = await Promise.all([
-        fetch('/api/v1/auth/profile', { headers }),
-        fetch('/api/v1/auth/settings/security', { headers }),
-        fetch('/api/v1/auth/settings/notifications', { headers })
+      const [profileRes] = await Promise.all([
+        fetch('/api/auth/profile', { headers })
       ]);
 
-      if (!profileRes.ok || !securityRes.ok || !notificationsRes.ok) {
-        throw new Error('Failed to load account data');
+      if (!profileRes.ok) {
+        throw new Error('Failed to load profile data');
       }
 
-      const [profile, security, notifications] = await Promise.all([
-        profileRes.json(),
-        securityRes.json(),
-        notificationsRes.json()
+      const [profile] = await Promise.all([
+        profileRes.json()
       ]);
 
       setUserProfile(profile);
-      setSecuritySettings(security);
-      setNotificationSettings(notifications);
+      
+      // Set default security and notification settings for now
+      setSecuritySettings({
+        mfa_enabled: false,
+        backup_codes_count: 0,
+        email_notifications: true,
+        login_notifications: true,
+        security_alerts: true,
+        session_timeout: 3600,
+        login_history_retention: 90
+      });
+      
+      setNotificationSettings({
+        email_notifications: true,
+        push_notifications: false,
+        marketing_emails: false,
+        security_alerts: true,
+        product_updates: true,
+        weekly_summary: false
+      });
       
       setProfileForm({
         first_name: profile.first_name || '',
@@ -150,8 +164,8 @@ const AccountSettings: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/auth/profile', {
-        method: 'PATCH',
+      const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -190,7 +204,7 @@ const AccountSettings: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/auth/change-password', {
+      const response = await fetch('/api/auth/change-password', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
