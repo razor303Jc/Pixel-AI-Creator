@@ -1,0 +1,47 @@
+{
+  "project_structure": {
+    "status": true,
+    "missing_dirs": []
+  },
+  "configuration_files": {
+    "status": true,
+    "missing_files": []
+  },
+  "python_environment": {
+    "status": true,
+    "python_version": "3.12",
+    "venv_exists": true,
+    "missing_dependencies": []
+  },
+  "api_service": {
+    "status": true,
+    "url": "http://localhost:8002",
+    "details": "Status: 200, Response: Welcome to Pixel AI Creator!"
+  },
+  "frontend_service": {
+    "status": true,
+    "url": "http://localhost:3002",
+    "details": "Status: 200"
+  },
+  "docker_environment": {
+    "status": true,
+    "docker_available": true,
+    "compose_available": true
+  },
+  "test_framework": {
+    "status": true,
+    "existing_files": [
+      "tests/conftest.py",
+      "tests/run_comprehensive_test_suite.sh",
+      "tests/test_comprehensive_api_system.py"
+    ],
+    "pytest_available": true
+  },
+  "summary": {
+    "overall_status": "HEALTHY",
+    "passed_checks": 7,
+    "total_checks": 7,
+    "timestamp": "2025-09-13T10:33:57.957976",
+    "duration": 0.951123
+  }
+}
