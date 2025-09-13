@@ -159,6 +159,57 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     setValidationErrors(newErrors);
   };
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Mark field as touched
+    setTouchedFields(prev => new Set([...Array.from(prev), name]));
+
+    // Validate on blur
+    const newErrors = { ...validationErrors };
+    
+    switch (name) {
+      case 'email':
+        const emailError = validateEmail(value);
+        if (emailError) newErrors.email = emailError;
+        else delete newErrors.email;
+        break;
+      case 'password':
+        const passwordError = validatePassword(value);
+        if (passwordError) newErrors.password = passwordError;
+        else delete newErrors.password;
+        
+        // Also revalidate confirm password if it exists
+        if (formData.confirmPassword) {
+          if (value !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match';
+          } else {
+            delete newErrors.confirmPassword;
+          }
+        }
+        break;
+      case 'confirmPassword':
+        if (formData.password !== value) {
+          newErrors.confirmPassword = 'Passwords do not match';
+        } else {
+          delete newErrors.confirmPassword;
+        }
+        break;
+      case 'firstName':
+        const firstNameError = validateName(value, 'First name');
+        if (firstNameError) newErrors.firstName = firstNameError;
+        else delete newErrors.firstName;
+        break;
+      case 'lastName':
+        const lastNameError = validateName(value, 'Last name');
+        if (lastNameError) newErrors.lastName = lastNameError;
+        else delete newErrors.lastName;
+        break;
+    }
+
+    setValidationErrors(newErrors);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -194,7 +245,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     if (Object.keys(errors).length > 0) {
       setIsLoading(false);
       setError('Please fix the validation errors below');
-      setRegistrationStep('error');
+      setRegistrationStep('form'); // Keep in form step to show validation errors
       return;
     }
 
@@ -312,7 +363,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Alert variant="danger" className="mb-3">
+                      <Alert variant="danger" className="alert alert-danger mb-3">
                         <div className="d-flex align-items-start">
                           <div className="me-2">
                             <AlertTriangle size={20} className="text-danger" />
@@ -332,7 +383,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Alert variant="success" className="mb-3" style={{ 
+                      <Alert variant="success" className="alert alert-success mb-3" style={{ 
                         background: 'linear-gradient(45deg, #d4edda, #c3e6cb)',
                         border: '2px solid #28a745',
                         borderRadius: '12px'
@@ -381,6 +432,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               placeholder="Enter first name"
                               value={formData.firstName}
                               onChange={handleInputChange}
+                              onBlur={handleBlur}
                               required
                               className="py-3"
                               isInvalid={touchedFields.has('firstName') && !!validationErrors.firstName}
@@ -420,6 +472,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               placeholder="Enter last name"
                               value={formData.lastName}
                               onChange={handleInputChange}
+                              onBlur={handleBlur}
                               required
                               className="py-3"
                               isInvalid={touchedFields.has('lastName') && !!validationErrors.lastName}
@@ -460,6 +513,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                           placeholder="Enter your email"
                           value={formData.email}
                           onChange={handleInputChange}
+                          onBlur={handleBlur}
                           required
                           className="py-3"
                           isInvalid={touchedFields.has('email') && !!validationErrors.email}
@@ -503,6 +557,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                           placeholder="Enter company name"
                           value={formData.companyName}
                           onChange={handleInputChange}
+                          onBlur={handleBlur}
                           className="py-3"
                           style={{
                             borderRadius: '10px',
@@ -532,6 +587,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                                 placeholder="Enter password"
                                 value={formData.password}
                                 onChange={handleInputChange}
+                                onBlur={handleBlur}
                                 required
                                 className="py-3 pe-5"
                                 isInvalid={touchedFields.has('password') && !!validationErrors.password}
@@ -610,6 +666,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                                 placeholder="Confirm password"
                                 value={formData.confirmPassword}
                                 onChange={handleInputChange}
+                                onBlur={handleBlur}
                                 required
                                 className="py-3 pe-5"
                                 isInvalid={touchedFields.has('confirmPassword') && !!validationErrors.confirmPassword}
@@ -696,7 +753,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                     className="text-center mt-3 mb-3"
                   >
                     <div className="d-flex align-items-center justify-content-center text-muted small">
-                      <Shield size={16} className="me-2 text-success" />
+                      <Shield size={16} className="me-2 text-success" data-testid="security-shield" />
                       <span>Your data is encrypted and secure</span>
                     </div>
                   </motion.div>
