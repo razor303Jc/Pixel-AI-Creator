@@ -123,12 +123,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       dispatch({ type: authActions.SET_LOADING, payload: true });
 
       const tokenResponse = await apiService.auth.login(credentials);
-      const userResponse = await apiService.auth.getCurrentUser();
+      
+      // Create user object from login response instead of calling /me endpoint
+      const user = {
+        id: tokenResponse.user_id,
+        email: credentials.email, // We know the email from login
+        role: tokenResponse.role,
+      };
 
       dispatch({
         type: authActions.LOGIN_SUCCESS,
         payload: {
-          user: userResponse.data,
+          user,
           token: tokenResponse.access_token,
         },
       });
