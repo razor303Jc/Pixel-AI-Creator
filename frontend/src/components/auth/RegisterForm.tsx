@@ -356,7 +356,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                     >
                       <UserPlus size={30} className="text-white" />
                     </motion.div>
-                    <h3 className="fw-bold text-dark mb-2">Create Account</h3>
+                    <h3 className="fw-bold text-dark mb-2">Create Your Account</h3>
                     <p className="text-muted">Join Pixel AI Creator platform</p>
                   </div>
 
@@ -757,7 +757,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                         ) : (
                           <>
                             <UserPlus size={18} className="me-2" />
-                            Create Account
+                            Create Your Account
                           </>
                         )}
                       </Button>

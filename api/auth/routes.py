@@ -238,6 +238,65 @@ async def get_user_profile(
         )
 
 
+@router.get(
+    "/me",
+    response_model=UserProfile,
+    summary="Get current user information",
+    description="Get current authenticated user's profile information",
+)
+async def get_current_user_info(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> UserProfile:
+    """Get current user's profile information.
+
+    This endpoint provides the same functionality as /profile but with
+    a more standard /me endpoint path that matches common API conventions.
+
+    Args:
+        current_user: Current authenticated user
+        db: Database session
+
+    Returns:
+        User profile information
+
+    Raises:
+        HTTPException: If user not found
+    """
+    try:
+        result = await db.execute(
+            select(User).where(User.id == current_user["user_id"])
+        )
+        user = result.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+
+        return UserProfile(
+            id=user.id,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            company_name=user.company_name,
+            phone=user.phone,
+            role=UserRole(user.role),
+            is_active=user.is_active,
+            created_at=user.created_at,
+            last_login=user.last_login,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Profile fetch error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch profile",
+        )
+
+
 @router.put(
     "/profile",
     response_model=SuccessResponse,

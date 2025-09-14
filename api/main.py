@@ -26,6 +26,7 @@ from routes.embeddings import router as embeddings_router
 from routes.clients import router as clients_router
 from routes.chatbots import router as chatbots_router
 from routes.conversations import router as conversations_router
+from routes.chat import router as chat_router
 from routes.analytics_clean import router as analytics_router
 from routes.language import router as language_router
 
@@ -68,6 +69,7 @@ app.include_router(embeddings_router, prefix="/api")
 app.include_router(clients_router, prefix="/api")
 app.include_router(chatbots_router, prefix="/api")
 app.include_router(conversations_router, prefix="/api")
+app.include_router(chat_router, prefix="/api")
 app.include_router(analytics_router)
 app.include_router(auth_router, prefix="/api")
 # app.include_router(enhanced_auth_router, prefix="/api")  # Temporarily disabled

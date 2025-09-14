@@ -67,19 +67,19 @@ celery_app.conf.update(
     },
     # Beat schedule for periodic tasks
     beat_schedule={
-        # Analytics generation
-        "generate_daily_analytics": {
-            "task": "services.analytics_processor.generate_daily_analytics",
-            "schedule": crontab(hour=1, minute=0),  # Daily at 1 AM
-        },
-        "generate_weekly_analytics": {
-            "task": "services.analytics_processor.generate_weekly_analytics",
-            "schedule": crontab(hour=2, minute=0, day_of_week=1),  # Monday at 2 AM
-        },
-        "generate_monthly_analytics": {
-            "task": "services.analytics_processor.generate_monthly_analytics",
-            "schedule": crontab(hour=3, minute=0, day=1),  # 1st of month at 3 AM
-        },
+        # Analytics generation - TEMPORARILY DISABLED FOR DEBUGGING
+        # "generate_daily_analytics": {
+        #     "task": "services.analytics_processor.generate_daily_analytics",
+        #     "schedule": crontab(hour=1, minute=0),  # Daily at 1 AM
+        # },
+        # "generate_weekly_analytics": {
+        #     "task": "services.analytics_processor.generate_weekly_analytics",
+        #     "schedule": crontab(hour=2, minute=0, day_of_week=1),  # Monday at 2 AM
+        # },
+        # "generate_monthly_analytics": {
+        #     "task": "services.analytics_processor.generate_monthly_analytics",
+        #     "schedule": crontab(hour=3, minute=0, day_of_month=1),
+        # },
         # Conversation processing
         "process_pending_conversations": {
             "task": "services.conversation_processor.process_pending_conversations",
