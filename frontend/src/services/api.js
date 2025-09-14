@@ -170,8 +170,9 @@ export const apiService = {
 
   // Client management endpoints
   clients: {
-    getAll: async () => {
-      return retryRequest(() => apiClient.get("clients/"));
+    getAll: async (statusFilter = "active") => {
+      const params = statusFilter ? `?status=${statusFilter}` : "";
+      return retryRequest(() => apiClient.get(`clients/${params}`));
     },
 
     getById: async (clientId) => {

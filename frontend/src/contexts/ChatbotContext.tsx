@@ -106,7 +106,7 @@ const chatbotReducer = (state: any, action: any) => {
     case actionTypes.REMOVE_CLIENT:
       return {
         ...state,
-        clients: state.clients.filter((client: any) => client.id !== action.payload),
+        clients: state.clients.filter((client: any) => client.id !== parseInt(action.payload)),
       };
 
     case actionTypes.SET_CURRENT_CLIENT:
@@ -156,7 +156,7 @@ const chatbotReducer = (state: any, action: any) => {
       return {
         ...state,
         chatbots: state.chatbots.filter(
-          (chatbot: any) => chatbot.id !== action.payload
+          (chatbot: any) => chatbot.id !== parseInt(action.payload)
         ),
       };
 

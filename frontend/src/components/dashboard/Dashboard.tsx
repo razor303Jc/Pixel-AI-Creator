@@ -100,12 +100,24 @@ const Dashboard = () => {
   const [editItem, setEditItem] = useState(null);
   const [editItemData, setEditItemData] = useState<ClientFormData | ChatbotFormData>({});
   
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<any>(null);
+  const [deleteType, setDeleteType] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [showProfileSettings, setShowProfileSettings] = useState(false);
   
   // Navigation state
   const [activeView, setActiveView] = useState('dashboard');
+
+  // Form validation state
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationTouched, setValidationTouched] = useState<{[key: string]: boolean}>({});
 
   // Load data on component mount
   useEffect(() => {
@@ -124,10 +136,118 @@ const Dashboard = () => {
   const closeCreateModal = () => {
     setShowCreateModal(false);
     setNewItemData({});
+    setFormErrors({});
+    setValidationTouched({});
+    setIsSubmitting(false);
+  };
+
+  // Validation functions
+  const validateEmail = (email: string): string => {
+    if (!email) return 'Email is required';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    if (email.length > 100) return 'Email must be less than 100 characters';
+    return '';
+  };
+
+  const validateName = (name: string): string => {
+    if (!name) return 'Name is required';
+    if (name.length < 2) return 'Name must be at least 2 characters';
+    if (name.length > 50) return 'Name must be less than 50 characters';
+    if (!/^[a-zA-Z0-9\s\-_.,&]+$/.test(name)) return 'Name contains invalid characters';
+    return '';
+  };
+
+  const validateCompany = (company: string): string => {
+    if (!company) return 'Company is required';
+    if (company.length < 2) return 'Company name must be at least 2 characters';
+    if (company.length > 100) return 'Company name must be less than 100 characters';
+    return '';
+  };
+
+  const validateDescription = (description: string): string => {
+    if (description && description.length > 500) return 'Description must be less than 500 characters';
+    return '';
+  };
+
+  const validateClientForm = (data: ClientFormData): {[key: string]: string} => {
+    const errors: {[key: string]: string} = {};
+    
+    const nameError = validateName(data.name || '');
+    if (nameError) errors.name = nameError;
+    
+    const emailError = validateEmail(data.email || '');
+    if (emailError) errors.email = emailError;
+    
+    const companyError = validateCompany(data.company || '');
+    if (companyError) errors.company = companyError;
+    
+    const descriptionError = validateDescription(data.description || '');
+    if (descriptionError) errors.description = descriptionError;
+    
+    return errors;
+  };
+
+  const validateChatbotForm = (data: ChatbotFormData): {[key: string]: string} => {
+    const errors: {[key: string]: string} = {};
+    
+    const nameError = validateName(data.name || '');
+    if (nameError) errors.name = nameError;
+    
+    const descriptionError = validateDescription(data.description || '');
+    if (descriptionError) errors.description = descriptionError;
+    
+    return errors;
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    setNewItemData(prev => ({ ...prev, [field]: value }));
+    
+    // Mark field as touched
+    setValidationTouched(prev => ({ ...prev, [field]: true }));
+    
+    // Real-time validation
+    let error = '';
+    if (field === 'name') {
+      error = validateName(value);
+    } else if (field === 'email') {
+      error = validateEmail(value);
+    } else if (field === 'company') {
+      error = validateCompany(value);
+    } else if (field === 'description') {
+      error = validateDescription(value);
+    }
+    
+    setFormErrors(prev => ({ 
+      ...prev, 
+      [field]: error 
+    }));
   };
 
   const handleCreateSubmit = async () => {
+    setIsSubmitting(true);
+    
     try {
+      let errors: {[key: string]: string} = {};
+      
+      if (createType === 'client') {
+        const clientData = newItemData as ClientFormData;
+        errors = validateClientForm(clientData);
+      } else if (createType === 'chatbot') {
+        const chatbotData = newItemData as ChatbotFormData;
+        errors = validateChatbotForm(chatbotData);
+      }
+      
+      setFormErrors(errors);
+      
+      // If there are validation errors, don't submit
+      if (Object.keys(errors).length > 0) {
+        setIsSubmitting(false);
+        setToastMessage('Please fix the errors in the form before submitting.');
+        setShowToast(true);
+        return;
+      }
+
       if (createType === 'client') {
         const clientData = newItemData as ClientFormData;
         await createClient({
@@ -148,30 +268,61 @@ const Dashboard = () => {
 
       // If we reach here, the operation was successful
       closeCreateModal();
-      setToastMessage(`${createType} created successfully!`);
+      setToastMessage(`${createType === 'client' ? 'Client' : 'Assistant'} created successfully!`);
       setShowToast(true);
     } catch (error) {
       console.error('Failed to create item:', error);
+      setToastMessage(`Failed to create ${createType}. Please try again.`);
+      setShowToast(true);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Handle delete
-  const handleDelete = async (item: any, type: string) => {
-    if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
-      try {
-        if (type === 'client') {
-          await deleteClient(item.id.toString());
-        } else if (type === 'chatbot') {
-          await deleteChatbot(item.id.toString());
-        }
+  // Handle delete - improved version with modal confirmation
+  const handleDeleteRequest = (item: any, type: string) => {
+    setDeleteItem(item);
+    setDeleteType(type);
+    setShowDeleteModal(true);
+  };
 
-        // If we reach here, the operation was successful
-        setToastMessage(`${type} deleted successfully!`);
-        setShowToast(true);
-      } catch (error) {
-        console.error('Failed to delete item:', error);
+  const handleDeleteConfirm = async () => {
+    if (!deleteItem || !deleteType) return;
+    
+    setIsDeleting(true);
+    setDeletingItemId(deleteItem.id.toString());
+    
+    try {
+      if (deleteType === 'client') {
+        await deleteClient(deleteItem.id.toString());
+        // Refresh clients data to ensure UI is updated
+        await fetchClients();
+        setToastMessage(`Client "${deleteItem.name}" deleted successfully!`);
+      } else if (deleteType === 'chatbot') {
+        await deleteChatbot(deleteItem.id.toString());
+        // Refresh chatbots data to ensure UI is updated
+        await fetchChatbots();
+        setToastMessage(`Assistant "${deleteItem.name}" deleted successfully!`);
       }
+      
+      setShowToast(true);
+      setShowDeleteModal(false);
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      setToastMessage(`Failed to delete ${deleteType}. Please try again.`);
+      setShowToast(true);
+    } finally {
+      setIsDeleting(false);
+      setDeletingItemId(null);
+      setDeleteItem(null);
+      setDeleteType('');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setDeleteItem(null);
+    setDeleteType('');
   };
 
   // Handle edit
@@ -449,7 +600,25 @@ const Dashboard = () => {
                     variants={cardVariants}
                     whileHover="hover"
                   >
-                    <Card className="border-0 shadow-sm h-100" style={{ borderRadius: '15px' }}>
+                    <Card 
+                      className={`border-0 shadow-sm h-100 ${deletingItemId === client.id.toString() ? 'opacity-50' : ''}`} 
+                      style={{ borderRadius: '15px', position: 'relative' }}
+                    >
+                      {deletingItemId === client.id.toString() && (
+                        <div 
+                          className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                          style={{ 
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)', 
+                            zIndex: 10,
+                            borderRadius: '15px'
+                          }}
+                        >
+                          <div className="text-center">
+                            <div className="spinner-border text-danger mb-2" role="status" aria-hidden="true"></div>
+                            <div className="small text-danger fw-semibold">Deleting...</div>
+                          </div>
+                        </div>
+                      )}
                       <Card.Body>
                         <div className="d-flex justify-content-between align-items-start mb-3">
                           <div>
@@ -484,6 +653,7 @@ const Dashboard = () => {
                               size="sm"
                               className="me-2 rounded-pill border-0"
                               onClick={() => handleEdit(client, 'client')}
+                              disabled={deletingItemId === client.id.toString()}
                             >
                               <Edit3 size={14} />
                             </Button>
@@ -491,7 +661,8 @@ const Dashboard = () => {
                               variant="outline-danger"
                               size="sm"
                               className="rounded-pill border-0"
-                              onClick={() => handleDelete(client, 'client')}
+                              onClick={() => handleDeleteRequest(client, 'client')}
+                              disabled={deletingItemId === client.id.toString()}
                             >
                               <Trash2 size={14} />
                             </Button>
@@ -546,7 +717,25 @@ const Dashboard = () => {
                     variants={cardVariants}
                     whileHover="hover"
                   >
-                    <Card className="border-0 shadow-sm h-100" style={{ borderRadius: '15px' }}>
+                    <Card 
+                      className={`border-0 shadow-sm h-100 ${deletingItemId === chatbot.id.toString() ? 'opacity-50' : ''}`} 
+                      style={{ borderRadius: '15px', position: 'relative' }}
+                    >
+                      {deletingItemId === chatbot.id.toString() && (
+                        <div 
+                          className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                          style={{ 
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)', 
+                            zIndex: 10,
+                            borderRadius: '15px'
+                          }}
+                        >
+                          <div className="text-center">
+                            <div className="spinner-border text-danger mb-2" role="status" aria-hidden="true"></div>
+                            <div className="small text-danger fw-semibold">Deleting...</div>
+                          </div>
+                        </div>
+                      )}
                       <Card.Body>
                         <div className="d-flex justify-content-between align-items-start mb-3">
                           <div>
@@ -575,6 +764,7 @@ const Dashboard = () => {
                               size="sm"
                               className="me-2 rounded-pill border-0"
                               onClick={() => handleEdit(chatbot, 'chatbot')}
+                              disabled={deletingItemId === chatbot.id.toString()}
                             >
                               <Edit3 size={14} />
                             </Button>
@@ -582,7 +772,8 @@ const Dashboard = () => {
                               variant="outline-danger"
                               size="sm"
                               className="rounded-pill border-0"
-                              onClick={() => handleDelete(chatbot, 'chatbot')}
+                              onClick={() => handleDeleteRequest(chatbot, 'chatbot')}
+                              disabled={deletingItemId === chatbot.id.toString()}
                             >
                               <Trash2 size={14} />
                             </Button>
@@ -621,39 +812,70 @@ const Dashboard = () => {
           <Modal.Title>Create New {createType === 'client' ? 'Client' : 'AI Assistant'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {/* Validation Summary */}
+          {Object.keys(formErrors).length > 0 && Object.values(formErrors).some(error => error) && (
+            <Alert variant="danger" className="mb-3">
+              <AlertCircle size={16} className="me-2" />
+              <strong>Please fix the following errors:</strong>
+              <ul className="mb-0 mt-2">
+                {Object.entries(formErrors).map(([field, error]) => 
+                  error ? <li key={field}><strong>{field.charAt(0).toUpperCase() + field.slice(1)}:</strong> {error}</li> : null
+                )}
+              </ul>
+            </Alert>
+          )}
+          
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>Name <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 type="text"
                 value={newItemData.name || ''}
-                onChange={(e) => setNewItemData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => handleFieldChange('name', e.target.value)}
                 placeholder={`Enter ${createType} name`}
-                className="rounded-3"
+                className={`rounded-3 ${formErrors.name ? 'is-invalid' : validationTouched.name && !formErrors.name ? 'is-valid' : ''}`}
+                isInvalid={!!formErrors.name}
               />
+              {formErrors.name && (
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.name}
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
             
             {createType === 'client' && (
               <>
                 <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
+                  <Form.Label>Email <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="email"
                     value={(newItemData as ClientFormData).email || ''}
-                    onChange={(e) => setNewItemData(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Enter email address"
-                    className="rounded-3"
+                    onChange={(e) => handleFieldChange('email', e.target.value)}
+                    placeholder="Enter email address (e.g., john@company.com)"
+                    className={`rounded-3 ${formErrors.email ? 'is-invalid' : validationTouched.email && !formErrors.email ? 'is-valid' : ''}`}
+                    isInvalid={!!formErrors.email}
                   />
+                  {formErrors.email && (
+                    <Form.Control.Feedback type="invalid">
+                      {formErrors.email}
+                    </Form.Control.Feedback>
+                  )}
                 </Form.Group>
                 <Form.Group className="mb-3">
-                  <Form.Label>Company</Form.Label>
+                  <Form.Label>Company <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     value={(newItemData as ClientFormData).company || ''}
-                    onChange={(e) => setNewItemData(prev => ({ ...prev, company: e.target.value }))}
+                    onChange={(e) => handleFieldChange('company', e.target.value)}
                     placeholder="Enter company name"
-                    className="rounded-3"
+                    className={`rounded-3 ${formErrors.company ? 'is-invalid' : validationTouched.company && !formErrors.company ? 'is-valid' : ''}`}
+                    isInvalid={!!formErrors.company}
                   />
+                  {formErrors.company && (
+                    <Form.Control.Feedback type="invalid">
+                      {formErrors.company}
+                    </Form.Control.Feedback>
+                  )}
                 </Form.Group>
               </>
             )}
@@ -696,23 +918,40 @@ const Dashboard = () => {
                 as="textarea"
                 rows={3}
                 value={newItemData.description || ''}
-                onChange={(e) => setNewItemData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter description"
-                className="rounded-3"
+                onChange={(e) => handleFieldChange('description', e.target.value)}
+                placeholder="Enter description (optional)"
+                className={`rounded-3 ${formErrors.description ? 'is-invalid' : validationTouched.description && !formErrors.description ? 'is-valid' : ''}`}
+                isInvalid={!!formErrors.description}
               />
+              {formErrors.description && (
+                <Form.Control.Feedback type="invalid">
+                  {formErrors.description}
+                </Form.Control.Feedback>
+              )}
+              <Form.Text className="text-muted">
+                Max 500 characters. {newItemData.description ? `${newItemData.description.length}/500` : '0/500'}
+              </Form.Text>
             </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={closeCreateModal}>
+          <Button variant="secondary" onClick={closeCreateModal} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button 
             variant="primary"
             onClick={handleCreateSubmit}
+            disabled={isSubmitting || Object.keys(formErrors).some(key => formErrors[key])}
             style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}
           >
-            Create {createType === 'client' ? 'Client' : 'Assistant'}
+            {isSubmitting ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Creating...
+              </>
+            ) : (
+              <>Create {createType === 'client' ? 'Client' : 'Assistant'}</>
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -784,6 +1023,66 @@ const Dashboard = () => {
             style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}
           >
             Update {editType === 'client' ? 'Client' : 'Assistant'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={handleDeleteCancel} centered>
+        <Modal.Header closeButton className="border-0">
+          <Modal.Title className="text-danger">
+            <Trash2 size={20} className="me-2" />
+            Confirm Deletion
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center">
+            <div className="mb-3">
+              <Trash2 size={48} className="text-danger opacity-50" />
+            </div>
+            <h5 className="mb-3">
+              Are you sure you want to delete this {deleteType}?
+            </h5>
+            {deleteItem && (
+              <div className="bg-light p-3 rounded-3 mb-3">
+                <strong>{deleteItem.name}</strong>
+                {deleteType === 'client' && deleteItem.email && (
+                  <div className="text-muted small">{deleteItem.email}</div>
+                )}
+                {deleteItem.description && (
+                  <div className="text-muted small mt-1">{deleteItem.description}</div>
+                )}
+              </div>
+            )}
+            <p className="text-muted">
+              This action cannot be undone. All associated data will be permanently removed.
+            </p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="secondary" 
+            onClick={handleDeleteCancel}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="danger" 
+            onClick={handleDeleteConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 size={16} className="me-1" />
+                Delete {deleteType === 'client' ? 'Client' : 'Assistant'}
+              </>
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
