@@ -17,12 +17,14 @@ from sqlalchemy import func, and_, or_, desc
 
 from core.celery_app import celery_app
 from core.database import get_db
-from services.cache_service import CacheService
-from models.conversation import Conversation
-from models.message import Message
-from models.user import User
-from models.chatbot import Chatbot
-from models.analytics import Analytics
+from services.cache_service import RedisCache
+from models.database_schema import (
+    Conversation,
+    Message,
+    User,
+    Chatbot,
+    ConversationAnalytics,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,7 @@ class AnalyticsProcessor:
     """Handles analytics generation and processing."""
 
     def __init__(self):
-        self.cache_service = CacheService()
+        self.cache_service = RedisCache()
 
     async def generate_daily_analytics(
         self, target_date: datetime = None

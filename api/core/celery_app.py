@@ -21,8 +21,8 @@ celery_app = Celery(
     backend=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/2",
     include=[
         "services.background_tasks",
-        "services.analytics_processor",
-        "services.conversation_processor",
+        # "services.analytics_processor",  # Temporarily disabled due to import issues
+        # "services.conversation_processor",  # Temporarily disabled due to import issues
     ],
 )
 
@@ -36,8 +36,8 @@ celery_app.conf.update(
     enable_utc=True,
     # Task routing
     task_routes={
-        "services.analytics_processor.*": {"queue": "analytics"},
-        "services.conversation_processor.*": {"queue": "conversations"},
+        # "services.analytics_processor.*": {"queue": "analytics"},
+        # "services.conversation_processor.*": {"queue": "conversations"},
         "services.background_tasks.send_email": {"queue": "notifications"},
         "services.background_tasks.cleanup_*": {"queue": "maintenance"},
     },
@@ -65,52 +65,10 @@ celery_app.conf.update(
         "master_name": "mymaster",
         "visibility_timeout": 3600,
     },
-    # Beat schedule for periodic tasks
+    # Beat schedule for periodic tasks - TEMPORARILY DISABLED FOR DEBUGGING
     beat_schedule={
-        # Analytics generation - TEMPORARILY DISABLED FOR DEBUGGING
-        # "generate_daily_analytics": {
-        #     "task": "services.analytics_processor.generate_daily_analytics",
-        #     "schedule": crontab(hour=1, minute=0),  # Daily at 1 AM
-        # },
-        # "generate_weekly_analytics": {
-        #     "task": "services.analytics_processor.generate_weekly_analytics",
-        #     "schedule": crontab(hour=2, minute=0, day_of_week=1),  # Monday at 2 AM
-        # },
-        # "generate_monthly_analytics": {
-        #     "task": "services.analytics_processor.generate_monthly_analytics",
-        #     "schedule": crontab(hour=3, minute=0, day_of_month=1),
-        # },
-        # Conversation processing
-        "process_pending_conversations": {
-            "task": "services.conversation_processor.process_pending_conversations",
-            "schedule": 30.0,  # Every 30 seconds
-        },
-        "cleanup_old_conversations": {
-            "task": "services.conversation_processor.cleanup_old_conversations",
-            "schedule": crontab(hour=4, minute=0),  # Daily at 4 AM
-        },
-        # System maintenance
-        "cleanup_expired_cache": {
-            "task": "services.background_tasks.cleanup_expired_cache",
-            "schedule": crontab(hour=5, minute=0),  # Daily at 5 AM
-        },
-        "backup_database": {
-            "task": "services.background_tasks.backup_database",
-            "schedule": crontab(hour=6, minute=0),  # Daily at 6 AM
-        },
-        "generate_system_health_report": {
-            "task": "services.background_tasks.generate_system_health_report",
-            "schedule": crontab(minute="*/15"),  # Every 15 minutes
-        },
-        # User notifications
-        "send_daily_summary_emails": {
-            "task": "services.background_tasks.send_daily_summary_emails",
-            "schedule": crontab(hour=8, minute=0),  # Daily at 8 AM
-        },
-        "send_weekly_reports": {
-            "task": "services.background_tasks.send_weekly_reports",
-            "schedule": crontab(hour=9, minute=0, day_of_week=1),  # Monday at 9 AM
-        },
+        # All beat schedules temporarily disabled to isolate the day=1 error
+        # Will re-enable after fixing the configuration issue
     },
 )
 

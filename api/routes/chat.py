@@ -52,10 +52,10 @@ async def get_user_conversations(
             .limit(limit)
             .offset(offset)
         )
-        
+
         result = await db.execute(conversations_query)
         conversations = result.scalars().all()
-        
+
         response_conversations = []
         for conv in conversations:
             # Get message count
@@ -64,7 +64,7 @@ async def get_user_conversations(
             )
             message_count_result = await db.execute(message_count_query)
             message_count = len(message_count_result.scalars().all())
-            
+
             # Get last message time
             last_message_query = (
                 select(Message.created_at)
@@ -74,7 +74,7 @@ async def get_user_conversations(
             )
             last_message_result = await db.execute(last_message_query)
             last_message_at = last_message_result.scalar_one_or_none()
-            
+
             response_conversations.append(
                 ConversationResponse(
                     id=conv.id,
@@ -89,13 +89,13 @@ async def get_user_conversations(
                     last_message_at=last_message_at,
                 )
             )
-        
+
         logger.info(
             f"Retrieved {len(response_conversations)} conversations "
             f"for user {current_user['email']}"
         )
         return response_conversations
-        
+
     except Exception as e:
         logger.error(f"Error retrieving conversations: {str(e)}")
         raise HTTPException(
@@ -124,13 +124,13 @@ async def send_chat_message(
         )
         conversation_result = await db.execute(conversation_query)
         conversation = conversation_result.scalar_one_or_none()
-        
+
         if not conversation:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Conversation not found or access denied",
             )
-        
+
         # Create the message
         message = Message(
             conversation_id=message_data.conversation_id,
@@ -139,15 +139,15 @@ async def send_chat_message(
             metadata=message_data.metadata or {},
             created_at=datetime.utcnow(),
         )
-        
+
         db.add(message)
-        
+
         # Update conversation timestamp
         conversation.updated_at = datetime.utcnow()
-        
+
         await db.commit()
         await db.refresh(message)
-        
+
         response = MessageResponse(
             id=message.id,
             conversation_id=message.conversation_id,
@@ -156,13 +156,13 @@ async def send_chat_message(
             metadata=message.metadata or {},
             created_at=message.created_at,
         )
-        
+
         logger.info(
             f"Message sent by user {current_user['email']} "
             f"to conversation {message_data.conversation_id}"
         )
         return response
-        
+
     except HTTPException:
         raise
     except Exception as e:

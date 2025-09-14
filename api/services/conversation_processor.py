@@ -16,9 +16,9 @@ from sqlalchemy import and_, or_
 
 from core.celery_app import celery_app
 from core.database import get_db
-from services.cache_service import CacheService
+from services.cache_service import RedisCache
 from services.ai_service import AIService
-from models.conversation import Conversation
+from models.database_schema import Conversation
 from models.message import Message
 from models.user import User
 from models.chatbot import Chatbot
@@ -30,7 +30,7 @@ class ConversationProcessor:
     """Handles conversation processing and management."""
 
     def __init__(self):
-        self.cache_service = CacheService()
+        self.cache_service = RedisCache()
         self.ai_service = AIService()
 
     async def queue_conversation(
@@ -423,7 +423,7 @@ class BatchConversationProcessor:
     """Handles batch conversation processing."""
 
     def __init__(self):
-        self.cache_service = CacheService()
+        self.cache_service = RedisCache()
 
     async def process_conversation_batch(
         self, conversation_batch: List[Dict[str, Any]], batch_id: str
