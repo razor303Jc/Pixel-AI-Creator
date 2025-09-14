@@ -93,12 +93,14 @@ const LoginForm = () => {
                       transition={{ delay: 0.3, duration: 0.5 }}
                     >
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold text-dark">
+                        <Form.Label htmlFor="loginEmail" className="fw-semibold text-dark">
                           <Mail size={16} className="me-2" />
                           Email Address
                         </Form.Label>
                         <Form.Control
+                          id="loginEmail"
                           type="email"
+                          name="email"
                           placeholder="Enter your email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
@@ -119,13 +121,15 @@ const LoginForm = () => {
                       transition={{ delay: 0.4, duration: 0.5 }}
                     >
                       <Form.Group className="mb-4">
-                        <Form.Label className="fw-semibold text-dark">
+                        <Form.Label htmlFor="loginPassword" className="fw-semibold text-dark">
                           <Lock size={16} className="me-2" />
                           Password
                         </Form.Label>
                         <div className="position-relative">
                           <Form.Control
+                            id="loginPassword"
                             type={showPassword ? 'text' : 'password'}
+                            name="password"
                             placeholder="Enter your password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}

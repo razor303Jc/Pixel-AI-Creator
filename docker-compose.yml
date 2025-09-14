@@ -146,14 +146,16 @@ services:
       context: ./frontend
       dockerfile: ../docker/frontend/Dockerfile.dev
     container_name: pixel-frontend
-    ports:
-      - "3002:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8002
+      - WDS_SOCKET_HOST=localhost
+      - WDS_SOCKET_PORT=3002
+      - REACT_APP_API_URL=http://localhost:8002/api
       - REACT_APP_ENVIRONMENT=development
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+    ports:
+      - "3002:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules

@@ -291,11 +291,14 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
               onClick={() => fileInputRef.current?.click()}
             >
               <input
+                id="fileInput"
+                name="files"
                 ref={fileInputRef}
                 type="file"
                 multiple
                 accept=".pdf,.docx,.doc,.txt"
                 onChange={handleFileInput}
+                autoComplete="off"
                 style={{ display: 'none' }}
               />
               

@@ -451,12 +451,15 @@ const PerformanceMonitor: React.FC = () => {
         <Modal.Body>
           <Form>
             <Form.Group className="mb-3">
-              <Form.Label>Cache Pattern (optional)</Form.Label>
+              <Form.Label htmlFor="cachePattern">Cache Pattern (optional)</Form.Label>
               <Form.Control
+                id="cachePattern"
+                name="cachePattern"
                 type="text"
                 placeholder="e.g., conversation:*, analytics:*"
                 value={cachePattern}
                 onChange={(e) => setCachePattern(e.target.value)}
+                autoComplete="off"
               />
               <Form.Text className="text-muted">
                 Leave empty to clear all cache entries. Use patterns like "conversation:*" to clear specific keys.

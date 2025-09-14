@@ -126,13 +126,16 @@ const LanguageSettings = ({ chatbotId }) => {
           <Row>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Default Language</Form.Label>
+                <Form.Label htmlFor="defaultLanguage">Default Language</Form.Label>
                 <Form.Select
+                  id="defaultLanguage"
+                  name="defaultLanguage"
                   value={config.default_language}
                   onChange={(e) => setConfig(prev => ({
                     ...prev,
                     default_language: e.target.value
                   }))}
+                  autoComplete="language"
                 >
                   {Object.entries(availableLanguages).map(([code, name]) => (
                     <option key={code} value={code}>{String(name)}</option>
@@ -142,13 +145,16 @@ const LanguageSettings = ({ chatbotId }) => {
             </Col>
             <Col md={6}>
               <Form.Group className="mb-3">
-                <Form.Label>Fallback Language</Form.Label>
+                <Form.Label htmlFor="fallbackLanguage">Fallback Language</Form.Label>
                 <Form.Select
+                  id="fallbackLanguage"
+                  name="fallbackLanguage"
                   value={config.fallback_language}
                   onChange={(e) => setConfig(prev => ({
                     ...prev,
                     fallback_language: e.target.value
                   }))}
+                  autoComplete="language"
                 >
                   {Object.entries(availableLanguages).map(([code, name]) => (
                     <option key={code} value={code}>{String(name)}</option>
@@ -160,6 +166,8 @@ const LanguageSettings = ({ chatbotId }) => {
 
           <Form.Group className="mb-3">
             <Form.Check
+              id="autoDetect"
+              name="autoDetect"
               type="checkbox"
               label="Enable automatic language detection"
               checked={config.auto_detect}

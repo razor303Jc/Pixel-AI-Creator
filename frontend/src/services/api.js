@@ -131,7 +131,7 @@ export const apiService = {
   auth: {
     login: async (credentials) => {
       const response = await retryRequest(() =>
-        apiClient.post("/auth/login", {
+        apiClient.post("auth/login", {
           email: credentials.email,
           password: credentials.password,
         })
@@ -149,7 +149,13 @@ export const apiService = {
     },
 
     register: async (userData) => {
-      return retryRequest(() => apiClient.post("/auth/register", userData));
+      console.log("🔗 Register API call - Base URL:", API_BASE_URL);
+      console.log(
+        "🔗 Register API call - Full URL:",
+        `${API_BASE_URL}/auth/register`
+      );
+      console.log("📤 Register payload:", userData);
+      return retryRequest(() => apiClient.post("auth/register", userData));
     },
 
     logout: () => {
@@ -158,102 +164,102 @@ export const apiService = {
     },
 
     getCurrentUser: async () => {
-      return retryRequest(() => apiClient.get("/auth/me"));
+      return retryRequest(() => apiClient.get("auth/me"));
     },
   },
 
   // Client management endpoints
   clients: {
     getAll: async () => {
-      return retryRequest(() => apiClient.get("/clients/"));
+      return retryRequest(() => apiClient.get("clients/"));
     },
 
     getById: async (clientId) => {
-      return retryRequest(() => apiClient.get(`/clients/${clientId}`));
+      return retryRequest(() => apiClient.get(`clients/${clientId}`));
     },
 
     create: async (clientData) => {
-      return retryRequest(() => apiClient.post("/clients/", clientData));
+      return retryRequest(() => apiClient.post("clients/", clientData));
     },
 
     update: async (clientId, clientData) => {
       return retryRequest(() =>
-        apiClient.put(`/clients/${clientId}`, clientData)
+        apiClient.put(`clients/${clientId}`, clientData)
       );
     },
 
     delete: async (clientId) => {
-      return retryRequest(() => apiClient.delete(`/clients/${clientId}`));
+      return retryRequest(() => apiClient.delete(`clients/${clientId}`));
     },
   },
 
   // Chatbot management endpoints
   chatbots: {
     getAll: async () => {
-      return retryRequest(() => apiClient.get("/chatbots/"));
+      return retryRequest(() => apiClient.get("chatbots/"));
     },
 
     getById: async (chatbotId) => {
-      return retryRequest(() => apiClient.get(`/chatbots/${chatbotId}`));
+      return retryRequest(() => apiClient.get(`chatbots/${chatbotId}`));
     },
 
     create: async (chatbotData) => {
-      return retryRequest(() => apiClient.post("/chatbots/", chatbotData));
+      return retryRequest(() => apiClient.post("chatbots/", chatbotData));
     },
 
     update: async (chatbotId, chatbotData) => {
       return retryRequest(() =>
-        apiClient.put(`/chatbots/${chatbotId}`, chatbotData)
+        apiClient.put(`chatbots/${chatbotId}`, chatbotData)
       );
     },
 
     delete: async (chatbotId) => {
-      return retryRequest(() => apiClient.delete(`/chatbots/${chatbotId}`));
+      return retryRequest(() => apiClient.delete(`chatbots/${chatbotId}`));
     },
   },
 
-  // Conversation management endpoints
+  // Conversation endpoints
   conversations: {
     getAll: async () => {
-      return retryRequest(() => apiClient.get("/conversations/"));
+      return retryRequest(() => apiClient.get("conversations/"));
     },
 
     getById: async (conversationId) => {
       return retryRequest(() =>
-        apiClient.get(`/conversations/${conversationId}`)
+        apiClient.get(`conversations/${conversationId}`)
       );
     },
 
     create: async (conversationData) => {
       return retryRequest(() =>
-        apiClient.post("/conversations/", conversationData)
+        apiClient.post("conversations/", conversationData)
       );
     },
 
     update: async (conversationId, conversationData) => {
       return retryRequest(() =>
-        apiClient.put(`/conversations/${conversationId}`, conversationData)
+        apiClient.put(`conversations/${conversationId}`, conversationData)
       );
     },
 
     delete: async (conversationId) => {
       return retryRequest(() =>
-        apiClient.delete(`/conversations/${conversationId}`)
+        apiClient.delete(`conversations/${conversationId}`)
       );
     },
   },
 
-  // Vector storage endpoints
+  // Embeddings endpoints
   embeddings: {
     store: async (embeddingData) => {
       return retryRequest(() =>
-        apiClient.post("/embeddings/store", embeddingData)
+        apiClient.post("embeddings/store", embeddingData)
       );
     },
 
     search: async (query, limit = 10) => {
       return retryRequest(() =>
-        apiClient.post("/embeddings/search", {
+        apiClient.post("embeddings/search", {
           query,
           limit,
         })
@@ -262,14 +268,14 @@ export const apiService = {
 
     delete: async (embeddingId) => {
       return retryRequest(() =>
-        apiClient.delete(`/embeddings/delete/${embeddingId}`)
+        apiClient.delete(`embeddings/delete/${embeddingId}`)
       );
     },
   },
 
   // Health check endpoint
   health: async () => {
-    return retryRequest(() => apiClient.get("/"));
+    return retryRequest(() => apiClient.get(""));
   },
 };
 

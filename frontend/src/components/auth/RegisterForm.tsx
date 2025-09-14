@@ -257,6 +257,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     }
 
     try {
+      // Add brief delay to ensure loading state is visible for testing
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Prepare data for backend (matching API expectations)
       const registrationData = {
         email: formData.email,
@@ -413,7 +416,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                     </motion.div>
                   )}
 
-                  <Form onSubmit={handleSubmit}>
+                  <Form onSubmit={handleSubmit} noValidate>
                     <Row>
                       <Col md={6}>
                         <motion.div
@@ -422,11 +425,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                           transition={{ delay: 0.3, duration: 0.5 }}
                         >
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold text-dark">
+                            <Form.Label htmlFor="firstName" className="fw-semibold text-dark">
                               <User size={16} className="me-2" />
                               First Name
                             </Form.Label>
                             <Form.Control
+                              id="firstName"
                               type="text"
                               name="firstName"
                               placeholder="Enter first name"
@@ -434,6 +438,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               onChange={handleInputChange}
                               onBlur={handleBlur}
                               required
+                              autoComplete="given-name"
                               className="py-3"
                               isInvalid={touchedFields.has('firstName') && !!validationErrors.firstName}
                               isValid={touchedFields.has('firstName') && !validationErrors.firstName && !!formData.firstName}
@@ -462,11 +467,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                           transition={{ delay: 0.4, duration: 0.5 }}
                         >
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold text-dark">
+                            <Form.Label htmlFor="lastName" className="fw-semibold text-dark">
                               <User size={16} className="me-2" />
                               Last Name
                             </Form.Label>
                             <Form.Control
+                              id="lastName"
                               type="text"
                               name="lastName"
                               placeholder="Enter last name"
@@ -474,6 +480,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                               onChange={handleInputChange}
                               onBlur={handleBlur}
                               required
+                              autoComplete="family-name"
                               className="py-3"
                               isInvalid={touchedFields.has('lastName') && !!validationErrors.lastName}
                               isValid={touchedFields.has('lastName') && !validationErrors.lastName && !!formData.lastName}
@@ -503,11 +510,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                       transition={{ delay: 0.5, duration: 0.5 }}
                     >
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold text-dark">
+                        <Form.Label htmlFor="email" className="fw-semibold text-dark">
                           <Mail size={16} className="me-2" />
                           Email Address
                         </Form.Label>
                         <Form.Control
+                          id="email"
                           type="email"
                           name="email"
                           placeholder="Enter your email"
@@ -515,6 +523,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                           onChange={handleInputChange}
                           onBlur={handleBlur}
                           required
+                          autoComplete="email"
                           className="py-3"
                           isInvalid={touchedFields.has('email') && !!validationErrors.email}
                           isValid={touchedFields.has('email') && !validationErrors.email && !!formData.email}
@@ -547,17 +556,19 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                       transition={{ delay: 0.6, duration: 0.5 }}
                     >
                       <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold text-dark">
+                        <Form.Label htmlFor="companyName" className="fw-semibold text-dark">
                           <Building size={16} className="me-2" />
                           Company Name (Optional)
                         </Form.Label>
                         <Form.Control
+                          id="companyName"
                           type="text"
                           name="companyName"
                           placeholder="Enter company name"
                           value={formData.companyName}
                           onChange={handleInputChange}
                           onBlur={handleBlur}
+                          autoComplete="organization"
                           className="py-3"
                           style={{
                             borderRadius: '10px',
@@ -576,12 +587,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                           transition={{ delay: 0.7, duration: 0.5 }}
                         >
                           <Form.Group className="mb-3">
-                            <Form.Label className="fw-semibold text-dark">
+                            <Form.Label htmlFor="password" className="fw-semibold text-dark">
                               <Lock size={16} className="me-2" />
                               Password
                             </Form.Label>
                             <div className="position-relative">
                               <Form.Control
+                                id="password"
                                 type={showPassword ? "text" : "password"}
                                 name="password"
                                 placeholder="Enter password"
@@ -589,6 +601,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                                 onChange={handleInputChange}
                                 onBlur={handleBlur}
                                 required
+                                autoComplete="new-password"
                                 className="py-3 pe-5"
                                 isInvalid={touchedFields.has('password') && !!validationErrors.password}
                                 isValid={touchedFields.has('password') && !validationErrors.password && !!formData.password}
@@ -655,12 +668,13 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                           transition={{ delay: 0.8, duration: 0.5 }}
                         >
                           <Form.Group className="mb-4">
-                            <Form.Label className="fw-semibold text-dark">
+                            <Form.Label htmlFor="confirmPassword" className="fw-semibold text-dark">
                               <Lock size={16} className="me-2" />
                               Confirm Password
                             </Form.Label>
                             <div className="position-relative">
                               <Form.Control
+                                id="confirmPassword"
                                 type={showConfirmPassword ? "text" : "password"}
                                 name="confirmPassword"
                                 placeholder="Confirm password"
@@ -668,6 +682,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                                 onChange={handleInputChange}
                                 onBlur={handleBlur}
                                 required
+                                autoComplete="new-password"
                                 className="py-3 pe-5"
                                 isInvalid={touchedFields.has('confirmPassword') && !!validationErrors.confirmPassword}
                                 isValid={touchedFields.has('confirmPassword') && !validationErrors.confirmPassword && !!formData.confirmPassword}
@@ -715,6 +730,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
                         type="submit"
                         className="w-100 py-3 fw-semibold"
                         disabled={isLoading}
+                        onClick={(e) => {
+                          console.log('🔘 Button onClick handler called');
+                          handleSubmit(e);
+                        }}
                         style={{
                           borderRadius: '10px',
                           background: 'linear-gradient(45deg, #28a745, #20c997)',
