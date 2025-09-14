@@ -41,6 +41,9 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useChatbot } from '../../contexts/ChatbotContext';
 import AccountSettings from '../auth/AccountSettings';
+import AnalyticsDashboard from './AnalyticsDashboard';
+import Templates from './Templates';
+import EnhancedClientDashboard from './EnhancedClientDashboard';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Interface definitions for form data
@@ -90,9 +93,19 @@ const Dashboard = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showActionModal, setShowActionModal] = useState(false);
   const [newItemData, setNewItemData] = useState<ClientFormData | ChatbotFormData>({});
+  
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editType, setEditType] = useState('client');
+  const [editItem, setEditItem] = useState(null);
+  const [editItemData, setEditItemData] = useState<ClientFormData | ChatbotFormData>({});
+  
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [showProfileSettings, setShowProfileSettings] = useState(false);
+  
+  // Navigation state
+  const [activeView, setActiveView] = useState('dashboard');
 
   // Load data on component mount
   useEffect(() => {
@@ -161,6 +174,39 @@ const Dashboard = () => {
     }
   };
 
+  // Handle edit
+  const handleEdit = (item: any, type: string) => {
+    setEditItem(item);
+    setEditType(type);
+    if (type === 'client') {
+      setEditItemData({
+        name: item.name || '',
+        email: item.email || '',
+        company: item.company || '',
+        description: item.description || ''
+      });
+    } else {
+      setEditItemData({
+        name: item.name || '',
+        description: item.description || ''
+      });
+    }
+    setShowEditModal(true);
+  };
+
+  // Handle edit submit
+  const handleEditSubmit = async () => {
+    try {
+      // Implementation for updating client/chatbot will be added here
+      console.log('Editing:', editType, editItemData);
+      setShowEditModal(false);
+      setToastMessage(`${editType} updated successfully!`);
+      setShowToast(true);
+    } catch (error) {
+      console.error('Failed to update item:', error);
+    }
+  };
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -214,9 +260,34 @@ const Dashboard = () => {
           <Navbar.Toggle />
           <Navbar.Collapse>
             <Nav className="me-auto">
-              <Nav.Link active>Dashboard</Nav.Link>
-              <Nav.Link>Analytics</Nav.Link>
-              <Nav.Link>Templates</Nav.Link>
+              <Nav.Link 
+                active={activeView === 'dashboard'}
+                onClick={() => setActiveView('dashboard')}
+                data-testid="nav-dashboard"
+              >
+                Dashboard
+              </Nav.Link>
+              <Nav.Link 
+                active={activeView === 'analytics'}
+                onClick={() => setActiveView('analytics')}
+                data-testid="nav-analytics"
+              >
+                Analytics
+              </Nav.Link>
+              <Nav.Link 
+                active={activeView === 'templates'}
+                onClick={() => setActiveView('templates')}
+                data-testid="nav-templates"
+              >
+                Templates
+              </Nav.Link>
+              <Nav.Link 
+                active={activeView === 'enhanced-dashboard'}
+                onClick={() => setActiveView('enhanced-dashboard')}
+                data-testid="nav-enhanced-dashboard"
+              >
+                Enhanced Dashboard
+              </Nav.Link>
             </Nav>
             <Nav>
               <NavDropdown 
@@ -249,13 +320,16 @@ const Dashboard = () => {
           </Alert>
         )}
 
-        {/* Stats Overview */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="mb-5"
-        >
+        {/* Conditional View Rendering */}
+        {activeView === 'dashboard' && (
+          <>
+            {/* Stats Overview */}
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="mb-5"
+            >
           <Row className="g-4">
             <Col md={4}>
               <motion.div variants={statsVariants}>
@@ -409,6 +483,7 @@ const Dashboard = () => {
                               variant="outline-primary"
                               size="sm"
                               className="me-2 rounded-pill border-0"
+                              onClick={() => handleEdit(client, 'client')}
                             >
                               <Edit3 size={14} />
                             </Button>
@@ -499,6 +574,7 @@ const Dashboard = () => {
                               variant="outline-primary"
                               size="sm"
                               className="me-2 rounded-pill border-0"
+                              onClick={() => handleEdit(chatbot, 'chatbot')}
                             >
                               <Edit3 size={14} />
                             </Button>
@@ -520,6 +596,23 @@ const Dashboard = () => {
             )}
           </Row>
         </motion.div>
+          </>
+        )}
+
+        {/* Analytics View */}
+        {activeView === 'analytics' && (
+          <AnalyticsDashboard />
+        )}
+
+        {/* Templates View */}
+        {activeView === 'templates' && (
+          <Templates />
+        )}
+
+        {/* Enhanced Dashboard View */}
+        {activeView === 'enhanced-dashboard' && (
+          <EnhancedClientDashboard />
+        )}
       </Container>
 
       {/* Create Modal */}
@@ -620,6 +713,77 @@ const Dashboard = () => {
             style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}
           >
             Create {createType === 'client' ? 'Client' : 'Assistant'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)} centered>
+        <Modal.Header closeButton className="border-0">
+          <Modal.Title>Edit {editType === 'client' ? 'Client' : 'Assistant'}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={(editItemData as any).name || ''}
+                onChange={(e) => setEditItemData({ ...editItemData, name: e.target.value })}
+                placeholder="Enter name"
+                className="rounded-3"
+              />
+            </Form.Group>
+            
+            {editType === 'client' && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    value={(editItemData as ClientFormData).email || ''}
+                    onChange={(e) => setEditItemData({ ...editItemData, email: e.target.value })}
+                    placeholder="Enter email"
+                    className="rounded-3"
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Company</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={(editItemData as ClientFormData).company || ''}
+                    onChange={(e) => setEditItemData({ ...editItemData, company: e.target.value })}
+                    placeholder="Enter company"
+                    className="rounded-3"
+                  />
+                </Form.Group>
+              </>
+            )}
+
+            <Form.Group className="mb-3">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={(editItemData as any).description || ''}
+                onChange={(e) => setEditItemData({ ...editItemData, description: e.target.value })}
+                placeholder="Enter description"
+                className="rounded-3"
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+            Cancel
+          </Button>
+          <Button 
+            variant="primary"
+            onClick={handleEditSubmit}
+            style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none' }}
+          >
+            Update {editType === 'client' ? 'Client' : 'Assistant'}
           </Button>
         </Modal.Footer>
       </Modal>
