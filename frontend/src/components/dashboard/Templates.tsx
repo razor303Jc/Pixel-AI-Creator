@@ -12,7 +12,6 @@ import {
   Button,
   Modal,
   Form,
-  Alert,
   Spinner,
   Badge,
   Tab,
@@ -28,7 +27,6 @@ import {
   Copy,
   Download,
   Search,
-  Filter,
   Star,
   Clock,
   User,
@@ -49,6 +47,36 @@ interface Template {
   usageCount: number;
   author: string;
   tags: string[];
+  tools?: TemplateTools[];
+  integrations?: TemplateIntegration[];
+}
+
+interface TemplateTools {
+  id: string;
+  name: string;
+  type: 'mcp-server' | 'api' | 'webhook' | 'database' | 'calendar' | 'email' | 'file-system' | 'browser' | 'analytics';
+  description: string;
+  configuration: {
+    endpoint?: string;
+    capabilities?: string[];
+    authentication?: {
+      type: string;
+      [key: string]: any;
+    };
+    [key: string]: any;
+  };
+  isEnabled: boolean;
+}
+
+interface TemplateIntegration {
+  id: string;
+  name: string;
+  type: 'api-integration' | 'webhook' | 'oauth' | 'api-key' | 'direct';
+  description: string;
+  configuration: {
+    [key: string]: any;
+  };
+  isEnabled: boolean;
 }
 
 interface TemplateFormData {
@@ -59,6 +87,8 @@ interface TemplateFormData {
   instructions: string;
   isPublic: boolean;
   tags: string[];
+  tools?: TemplateTools[];
+  integrations?: TemplateIntegration[];
 }
 
 const Templates: React.FC = () => {
@@ -88,48 +118,415 @@ const Templates: React.FC = () => {
       setTemplates([
         {
           id: 1,
-          name: 'Customer Support Assistant',
-          description: 'Professional customer support chatbot template',
-          category: 'support',
-          personality: 'helpful',
-          instructions: 'You are a helpful customer support assistant. Always be polite and try to resolve customer issues efficiently.',
+          name: 'Executive Personal Assistant (MCP)',
+          description: 'AI assistant with MCP server integration for calendar, email, and file management',
+          category: 'PA',
+          personality: 'professional',
+          instructions: 'You are an executive personal assistant with access to calendar management, email handling, and file organization. Use MCP server tools to efficiently manage schedules, communications, and documents.',
           isPublic: true,
           isFavorite: true,
           createdAt: '2024-01-15',
           updatedAt: '2024-01-20',
-          usageCount: 42,
+          usageCount: 156,
           author: 'Admin',
-          tags: ['support', 'customer-service', 'helpful']
+          tags: ['personal-assistant', 'mcp', 'calendar', 'email', 'productivity'],
+          tools: [
+            {
+              id: 'mcp-calendar',
+              name: 'Calendar MCP Server',
+              type: 'mcp-server',
+              description: 'Manages calendar events, scheduling, and meeting coordination',
+              configuration: {
+                endpoint: 'mcp://calendar-server',
+                capabilities: ['read_calendar', 'create_event', 'update_event', 'delete_event', 'check_availability'],
+                authentication: { type: 'oauth2', scope: 'calendar.readwrite' }
+              },
+              isEnabled: true
+            },
+            {
+              id: 'mcp-email',
+              name: 'Email MCP Server',
+              type: 'mcp-server',
+              description: 'Handles email composition, sending, and inbox management',
+              configuration: {
+                endpoint: 'mcp://email-server',
+                capabilities: ['read_email', 'send_email', 'draft_email', 'organize_inbox'],
+                authentication: { type: 'oauth2', scope: 'mail.readwrite' }
+              },
+              isEnabled: true
+            }
+          ],
+          integrations: [
+            {
+              id: 'google-workspace',
+              name: 'Google Workspace',
+              type: 'api-integration',
+              description: 'Full Google Workspace integration including Gmail, Calendar, Drive, and Docs',
+              configuration: {
+                apiKey: '{GOOGLE_API_KEY}',
+                clientId: '{GOOGLE_CLIENT_ID}',
+                scopes: ['https://www.googleapis.com/auth/gmail.modify', 'https://www.googleapis.com/auth/calendar.events', 'https://www.googleapis.com/auth/drive.file']
+              },
+              isEnabled: true
+            }
+          ]
         },
         {
           id: 2,
-          name: 'Sales Assistant',
-          description: 'Engaging sales chatbot template',
-          category: 'sales',
-          personality: 'persuasive',
-          instructions: 'You are a sales assistant focused on helping customers find the right products and closing deals.',
-          isPublic: false,
-          isFavorite: false,
-          createdAt: '2024-01-10',
-          updatedAt: '2024-01-18',
-          usageCount: 23,
-          author: 'User',
-          tags: ['sales', 'conversion', 'products']
+          name: 'Project Manager Pro (MCP)',
+          description: 'Advanced project management assistant with task tracking and team coordination via MCP',
+          category: 'PM',
+          personality: 'analytical',
+          instructions: 'You are a project management professional with access to task management, team coordination, and project tracking tools. Use MCP servers to manage projects, track progress, and coordinate team activities.',
+          isPublic: true,
+          isFavorite: true,
+          createdAt: '2024-01-18',
+          updatedAt: '2024-01-22',
+          usageCount: 89,
+          author: 'PMTeam',
+          tags: ['project-management', 'mcp', 'task-tracking', 'team-coordination', 'agile'],
+          tools: [
+            {
+              id: 'mcp-tasks',
+              name: 'Task Management MCP Server',
+              type: 'mcp-server',
+              description: 'Manages tasks, milestones, and project timelines',
+              configuration: {
+                endpoint: 'mcp://task-server',
+                capabilities: ['create_task', 'update_status', 'assign_task', 'track_progress', 'generate_reports'],
+                authentication: { type: 'api_key', key: '{TASK_API_KEY}' }
+              },
+              isEnabled: true
+            },
+            {
+              id: 'mcp-slack',
+              name: 'Slack Communication MCP Server',
+              type: 'mcp-server',
+              description: 'Integrates with Slack for team communication and notifications',
+              configuration: {
+                endpoint: 'mcp://slack-server',
+                capabilities: ['send_message', 'create_channel', 'schedule_reminder', 'get_team_status'],
+                authentication: { type: 'oauth2', scope: 'chat:write,channels:read' }
+              },
+              isEnabled: true
+            }
+          ],
+          integrations: [
+            {
+              id: 'asana-integration',
+              name: 'Asana Project Management',
+              type: 'api-integration',
+              description: 'Integration with Asana for project tracking and task management',
+              configuration: {
+                apiKey: '{ASANA_API_KEY}',
+                workspaceId: '{ASANA_WORKSPACE_ID}',
+                features: ['task_creation', 'status_updates', 'team_assignments', 'timeline_management']
+              },
+              isEnabled: true
+            },
+            {
+              id: 'jira-integration',
+              name: 'Jira Issue Tracking',
+              type: 'api-integration',
+              description: 'Jira integration for issue tracking and sprint management',
+              configuration: {
+                baseUrl: '{JIRA_BASE_URL}',
+                username: '{JIRA_USERNAME}',
+                apiToken: '{JIRA_API_TOKEN}',
+                projectKey: '{JIRA_PROJECT_KEY}'
+              },
+              isEnabled: false
+            }
+          ]
         },
         {
           id: 3,
-          name: 'Technical Support Bot',
-          description: 'Technical troubleshooting assistant',
-          category: 'technical',
-          personality: 'analytical',
-          instructions: 'You are a technical support specialist. Provide detailed, step-by-step solutions to technical problems.',
+          name: 'Social Media Manager (MCP)',
+          description: 'Social media management assistant with multi-platform posting and analytics',
+          category: 'M&S',
+          personality: 'creative',
+          instructions: 'You are a social media marketing specialist with access to multiple social platforms. Use MCP servers to create content, schedule posts, and analyze engagement across social media channels.',
           isPublic: true,
           isFavorite: false,
-          createdAt: '2024-01-12',
-          updatedAt: '2024-01-22',
-          usageCount: 18,
-          author: 'TechTeam',
-          tags: ['technical', 'troubleshooting', 'IT']
+          createdAt: '2024-01-20',
+          updatedAt: '2024-01-23',
+          usageCount: 73,
+          author: 'MarketingTeam',
+          tags: ['social-media', 'mcp', 'content-creation', 'analytics', 'marketing'],
+          tools: [
+            {
+              id: 'mcp-social-scheduler',
+              name: 'Social Media Scheduler MCP Server',
+              type: 'mcp-server',
+              description: 'Schedules and publishes content across multiple social platforms',
+              configuration: {
+                endpoint: 'mcp://social-scheduler',
+                capabilities: ['schedule_post', 'bulk_upload', 'cross_platform_posting', 'content_optimization'],
+                authentication: { type: 'multi_oauth', platforms: ['twitter', 'facebook', 'instagram', 'linkedin'] }
+              },
+              isEnabled: true
+            },
+            {
+              id: 'mcp-analytics',
+              name: 'Social Analytics MCP Server',
+              type: 'mcp-server',
+              description: 'Analyzes social media performance and engagement metrics',
+              configuration: {
+                endpoint: 'mcp://analytics-server',
+                capabilities: ['engagement_analysis', 'audience_insights', 'performance_reports', 'trend_analysis'],
+                authentication: { type: 'api_key', key: '{ANALYTICS_API_KEY}' }
+              },
+              isEnabled: true
+            }
+          ],
+          integrations: [
+            {
+              id: 'twitter-api',
+              name: 'Twitter/X API',
+              type: 'api-integration',
+              description: 'Twitter API v2 integration for posting and analytics',
+              configuration: {
+                bearerToken: '{TWITTER_BEARER_TOKEN}',
+                apiKey: '{TWITTER_API_KEY}',
+                apiSecret: '{TWITTER_API_SECRET}',
+                accessToken: '{TWITTER_ACCESS_TOKEN}'
+              },
+              isEnabled: true
+            },
+            {
+              id: 'facebook-api',
+              name: 'Facebook/Meta API',
+              type: 'api-integration',
+              description: 'Facebook Graph API for page management and posting',
+              configuration: {
+                appId: '{FACEBOOK_APP_ID}',
+                appSecret: '{FACEBOOK_APP_SECRET}',
+                pageAccessToken: '{FACEBOOK_PAGE_TOKEN}',
+                permissions: ['pages_manage_posts', 'pages_read_engagement']
+              },
+              isEnabled: true
+            },
+            {
+              id: 'linkedin-api',
+              name: 'LinkedIn API',
+              type: 'api-integration',
+              description: 'LinkedIn API for professional networking and B2B marketing',
+              configuration: {
+                clientId: '{LINKEDIN_CLIENT_ID}',
+                clientSecret: '{LINKEDIN_CLIENT_SECRET}',
+                redirectUri: '{LINKEDIN_REDIRECT_URI}',
+                scopes: ['w_member_social', 'r_organization_social']
+              },
+              isEnabled: false
+            }
+          ]
+        },
+        {
+          id: 4,
+          name: 'Data Analytics Assistant (MCP)',
+          description: 'Advanced analytics assistant with database and visualization tool integration',
+          category: 'A&D',
+          personality: 'analytical',
+          instructions: 'You are a data analytics specialist with access to databases, visualization tools, and statistical analysis capabilities. Use MCP servers to query data, generate insights, and create visualizations.',
+          isPublic: true,
+          isFavorite: true,
+          createdAt: '2024-01-16',
+          updatedAt: '2024-01-24',
+          usageCount: 124,
+          author: 'DataTeam',
+          tags: ['analytics', 'mcp', 'database', 'visualization', 'insights'],
+          tools: [
+            {
+              id: 'mcp-database',
+              name: 'Database Query MCP Server',
+              type: 'mcp-server',
+              description: 'Executes SQL queries and manages database connections',
+              configuration: {
+                endpoint: 'mcp://database-server',
+                capabilities: ['sql_query', 'schema_analysis', 'data_export', 'performance_optimization'],
+                authentication: { type: 'database_credentials', host: '{DB_HOST}', port: '{DB_PORT}' }
+              },
+              isEnabled: true
+            },
+            {
+              id: 'mcp-visualization',
+              name: 'Data Visualization MCP Server',
+              type: 'mcp-server',
+              description: 'Creates charts, graphs, and interactive visualizations',
+              configuration: {
+                endpoint: 'mcp://viz-server',
+                capabilities: ['chart_generation', 'dashboard_creation', 'interactive_plots', 'export_formats'],
+                authentication: { type: 'api_key', key: '{VIZ_API_KEY}' }
+              },
+              isEnabled: true
+            }
+          ],
+          integrations: [
+            {
+              id: 'tableau-api',
+              name: 'Tableau Server',
+              type: 'api-integration',
+              description: 'Tableau Server integration for advanced data visualization',
+              configuration: {
+                serverUrl: '{TABLEAU_SERVER_URL}',
+                username: '{TABLEAU_USERNAME}',
+                password: '{TABLEAU_PASSWORD}',
+                siteId: '{TABLEAU_SITE_ID}'
+              },
+              isEnabled: false
+            },
+            {
+              id: 'powerbi-api',
+              name: 'Power BI',
+              type: 'api-integration',
+              description: 'Microsoft Power BI integration for business intelligence',
+              configuration: {
+                clientId: '{POWERBI_CLIENT_ID}',
+                clientSecret: '{POWERBI_CLIENT_SECRET}',
+                tenantId: '{POWERBI_TENANT_ID}',
+                workspaceId: '{POWERBI_WORKSPACE_ID}'
+              },
+              isEnabled: false
+            }
+          ]
+        },
+        {
+          id: 5,
+          name: 'Customer Support Pro (MCP)',
+          description: 'Advanced customer support with CRM and ticketing system integration',
+          category: 'support',
+          personality: 'helpful',
+          instructions: 'You are a customer support specialist with access to CRM systems, ticketing platforms, and knowledge bases. Use MCP servers to resolve customer issues efficiently and maintain service quality.',
+          isPublic: true,
+          isFavorite: false,
+          createdAt: '2024-01-14',
+          updatedAt: '2024-01-21',
+          usageCount: 201,
+          author: 'SupportTeam',
+          tags: ['customer-support', 'mcp', 'crm', 'ticketing', 'knowledge-base'],
+          tools: [
+            {
+              id: 'mcp-crm',
+              name: 'CRM Integration MCP Server',
+              type: 'mcp-server',
+              description: 'Manages customer relationships and interaction history',
+              configuration: {
+                endpoint: 'mcp://crm-server',
+                capabilities: ['customer_lookup', 'interaction_history', 'contact_management', 'lead_tracking'],
+                authentication: { type: 'oauth2', scope: 'crm.read crm.write' }
+              },
+              isEnabled: true
+            },
+            {
+              id: 'mcp-tickets',
+              name: 'Ticketing System MCP Server',
+              type: 'mcp-server',
+              description: 'Manages support tickets and escalation workflows',
+              configuration: {
+                endpoint: 'mcp://tickets-server',
+                capabilities: ['create_ticket', 'update_status', 'assign_agent', 'escalate_issue'],
+                authentication: { type: 'api_key', key: '{TICKETS_API_KEY}' }
+              },
+              isEnabled: true
+            }
+          ],
+          integrations: [
+            {
+              id: 'salesforce-api',
+              name: 'Salesforce CRM',
+              type: 'api-integration',
+              description: 'Salesforce integration for comprehensive customer management',
+              configuration: {
+                instanceUrl: '{SALESFORCE_INSTANCE_URL}',
+                clientId: '{SALESFORCE_CLIENT_ID}',
+                clientSecret: '{SALESFORCE_CLIENT_SECRET}',
+                username: '{SALESFORCE_USERNAME}'
+              },
+              isEnabled: true
+            },
+            {
+              id: 'zendesk-api',
+              name: 'Zendesk Support',
+              type: 'api-integration',
+              description: 'Zendesk ticketing system integration',
+              configuration: {
+                subdomain: '{ZENDESK_SUBDOMAIN}',
+                email: '{ZENDESK_EMAIL}',
+                apiToken: '{ZENDESK_API_TOKEN}',
+                features: ['ticket_management', 'customer_profiles', 'knowledge_base']
+              },
+              isEnabled: false
+            }
+          ]
+        },
+        {
+          id: 6,
+          name: 'DevOps Assistant (MCP)',
+          description: 'DevOps automation assistant with CI/CD and infrastructure management',
+          category: 'technical',
+          personality: 'technical',
+          instructions: 'You are a DevOps engineer with access to CI/CD pipelines, infrastructure monitoring, and deployment tools. Use MCP servers to automate deployments, monitor systems, and manage infrastructure.',
+          isPublic: true,
+          isFavorite: true,
+          createdAt: '2024-01-19',
+          updatedAt: '2024-01-25',
+          usageCount: 67,
+          author: 'DevOpsTeam',
+          tags: ['devops', 'mcp', 'ci-cd', 'infrastructure', 'monitoring'],
+          tools: [
+            {
+              id: 'mcp-cicd',
+              name: 'CI/CD Pipeline MCP Server',
+              type: 'mcp-server',
+              description: 'Manages continuous integration and deployment pipelines',
+              configuration: {
+                endpoint: 'mcp://cicd-server',
+                capabilities: ['trigger_build', 'deploy_application', 'rollback_deployment', 'pipeline_status'],
+                authentication: { type: 'api_key', key: '{CICD_API_KEY}' }
+              },
+              isEnabled: true
+            },
+            {
+              id: 'mcp-monitoring',
+              name: 'Infrastructure Monitoring MCP Server',
+              type: 'mcp-server',
+              description: 'Monitors system health and performance metrics',
+              configuration: {
+                endpoint: 'mcp://monitoring-server',
+                capabilities: ['system_metrics', 'alert_management', 'log_analysis', 'performance_reports'],
+                authentication: { type: 'bearer_token', token: '{MONITORING_TOKEN}' }
+              },
+              isEnabled: true
+            }
+          ],
+          integrations: [
+            {
+              id: 'github-actions',
+              name: 'GitHub Actions',
+              type: 'api-integration',
+              description: 'GitHub Actions integration for CI/CD workflows',
+              configuration: {
+                token: '{GITHUB_TOKEN}',
+                repository: '{GITHUB_REPOSITORY}',
+                workflows: ['build', 'test', 'deploy'],
+                webhookUrl: '{WEBHOOK_URL}'
+              },
+              isEnabled: true
+            },
+            {
+              id: 'aws-integration',
+              name: 'AWS Services',
+              type: 'api-integration',
+              description: 'Amazon Web Services integration for cloud infrastructure',
+              configuration: {
+                accessKeyId: '{AWS_ACCESS_KEY_ID}',
+                secretAccessKey: '{AWS_SECRET_ACCESS_KEY}',
+                region: '{AWS_REGION}',
+                services: ['EC2', 'S3', 'RDS', 'Lambda', 'CloudWatch']
+              },
+              isEnabled: false
+            }
+          ]
         }
       ]);
       setLoading(false);
@@ -147,7 +544,7 @@ const Templates: React.FC = () => {
     return matchesSearch && matchesCategory && matchesTab;
   });
 
-  const categories = ['all', 'general', 'support', 'sales', 'technical', 'education', 'healthcare'];
+  const categories = ['all', 'PA', 'PM', 'M&S', 'A&D', 'support', 'technical', 'general'];
 
   // Modal handlers
   const handleCreateTemplate = () => {
