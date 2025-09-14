@@ -1,0 +1,67 @@
+{
+	"id": "pixel-ai-creator-environment",
+	"name": "Pixel AI Creator - Testing Environment",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8002/api",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "frontend_url",
+			"value": "http://localhost:3002",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "test_email",
+			"value": "api.test@example.com",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "test_password",
+			"value": "ApiTest123!",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "conversation_id",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "document_id",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "unique_email",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "timestamp",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment"
+}
