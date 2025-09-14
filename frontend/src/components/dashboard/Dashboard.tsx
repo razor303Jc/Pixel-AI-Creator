@@ -60,10 +60,70 @@ interface ChatbotFormData {
   type?: string;
   prompt?: string;
   personality?: string;
+  template?: string;
   client_id?: string;
 }
 
 type FormData = ClientFormData | ChatbotFormData;
+
+// Template categories and options
+const PERSONALITY_OPTIONS = [
+  { value: 'helpful', label: 'Helpful - Friendly and supportive' },
+  { value: 'professional', label: 'Professional - Formal and business-oriented' },
+  { value: 'creative', label: 'Creative - Innovative and imaginative' },
+  { value: 'analytical', label: 'Analytical - Data-driven and logical' },
+  { value: 'friendly', label: 'Friendly - Casual and approachable' },
+  { value: 'technical', label: 'Technical - Expert and detailed' },
+  { value: 'persuasive', label: 'Persuasive - Convincing and sales-oriented' },
+  { value: 'educational', label: 'Educational - Teaching and informative' }
+];
+
+const TEMPLATE_OPTIONS = [
+  // Personal Assistant (PA) Templates
+  { value: 'pa-general', label: 'PA - General Assistant', category: 'Personal Assistant' },
+  { value: 'pa-executive', label: 'PA - Executive Assistant', category: 'Personal Assistant' },
+  { value: 'pa-scheduling', label: 'PA - Scheduling Assistant', category: 'Personal Assistant' },
+  { value: 'pa-travel', label: 'PA - Travel Assistant', category: 'Personal Assistant' },
+  
+  // Project Management (PM) Templates
+  { value: 'pm-scrum', label: 'PM - Scrum Master', category: 'Project Management' },
+  { value: 'pm-agile', label: 'PM - Agile Coach', category: 'Project Management' },
+  { value: 'pm-waterfall', label: 'PM - Waterfall Manager', category: 'Project Management' },
+  { value: 'pm-stakeholder', label: 'PM - Stakeholder Manager', category: 'Project Management' },
+  
+  // Marketing & Sales (M&S) Templates
+  { value: 'ms-lead-gen', label: 'M&S - Lead Generation', category: 'Marketing & Sales' },
+  { value: 'ms-customer-service', label: 'M&S - Customer Service', category: 'Marketing & Sales' },
+  { value: 'ms-sales-funnel', label: 'M&S - Sales Funnel', category: 'Marketing & Sales' },
+  { value: 'ms-content-marketing', label: 'M&S - Content Marketing', category: 'Marketing & Sales' },
+  { value: 'ms-social-media', label: 'M&S - Social Media Manager', category: 'Marketing & Sales' },
+  
+  // Analytics & Data (A&D) Templates
+  { value: 'ad-data-analyst', label: 'A&D - Data Analyst', category: 'Analytics & Data' },
+  { value: 'ad-business-intelligence', label: 'A&D - Business Intelligence', category: 'Analytics & Data' },
+  { value: 'ad-reporting', label: 'A&D - Reporting Assistant', category: 'Analytics & Data' },
+  { value: 'ad-machine-learning', label: 'A&D - ML Assistant', category: 'Analytics & Data' },
+  
+  // Technical Templates
+  { value: 'tech-support', label: 'Technical Support', category: 'Technical' },
+  { value: 'tech-documentation', label: 'Documentation Assistant', category: 'Technical' },
+  { value: 'tech-code-review', label: 'Code Review Assistant', category: 'Technical' },
+  { value: 'tech-devops', label: 'DevOps Assistant', category: 'Technical' },
+  
+  // Healthcare Templates
+  { value: 'health-patient-care', label: 'Patient Care Assistant', category: 'Healthcare' },
+  { value: 'health-appointment', label: 'Appointment Scheduler', category: 'Healthcare' },
+  { value: 'health-wellness', label: 'Wellness Coach', category: 'Healthcare' },
+  
+  // Education Templates
+  { value: 'edu-tutor', label: 'Educational Tutor', category: 'Education' },
+  { value: 'edu-training', label: 'Training Assistant', category: 'Education' },
+  { value: 'edu-student-support', label: 'Student Support', category: 'Education' },
+  
+  // General Templates
+  { value: 'general-basic', label: 'Basic Assistant', category: 'General' },
+  { value: 'general-custom', label: 'Custom Template', category: 'General' }
+];
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -194,6 +254,14 @@ const Dashboard = () => {
     const nameError = validateName(data.name || '');
     if (nameError) errors.name = nameError;
     
+    if (!data.personality) {
+      errors.personality = 'Personality is required';
+    }
+    
+    if (!data.template) {
+      errors.template = 'Template selection is required';
+    }
+    
     const descriptionError = validateDescription(data.description || '');
     if (descriptionError) errors.description = descriptionError;
     
@@ -216,6 +284,10 @@ const Dashboard = () => {
       error = validateCompany(value);
     } else if (field === 'description') {
       error = validateDescription(value);
+    } else if (field === 'personality' && createType === 'chatbot') {
+      error = !value ? 'Personality is required' : '';
+    } else if (field === 'template' && createType === 'chatbot') {
+      error = !value ? 'Template selection is required' : '';
     }
     
     setFormErrors(prev => ({ 
@@ -261,7 +333,12 @@ const Dashboard = () => {
         await createChatbot({
           name: chatbotData.name,
           description: chatbotData.description,
-          personality: chatbotData.personality || 'helpful',
+          assistant_type: 'chatbot',
+          complexity: 'basic',
+          personality_config: {
+            personality: chatbotData.personality || 'helpful',
+            template: chatbotData.template || 'general-basic'
+          },
           client_id: chatbotData.client_id ? parseInt(chatbotData.client_id) : null,
         });
       }
@@ -750,14 +827,25 @@ const Dashboard = () => {
                         </div>
                         
                         <div className="d-flex justify-content-between align-items-center">
-                          <Badge 
-                            bg="primary" 
-                            className="rounded-pill"
-                            style={{ fontSize: '0.75rem' }}
-                          >
-                            <Zap size={12} className="me-1" />
-                            {chatbot.personality || 'Helpful'}
-                          </Badge>
+                          <div className="d-flex flex-column">
+                            <Badge 
+                              bg="primary" 
+                              className="rounded-pill mb-1"
+                              style={{ fontSize: '0.75rem' }}
+                            >
+                              <Zap size={12} className="me-1" />
+                              {(chatbot.personality_config?.personality) || chatbot.personality || 'Helpful'}
+                            </Badge>
+                            {chatbot.personality_config?.template && (
+                              <Badge 
+                                bg="info" 
+                                className="rounded-pill"
+                                style={{ fontSize: '0.7rem' }}
+                              >
+                                {TEMPLATE_OPTIONS.find(t => t.value === chatbot.personality_config.template)?.label || chatbot.personality_config.template}
+                              </Badge>
+                            )}
+                          </div>
                           <div>
                             <Button
                               variant="outline-primary"
@@ -883,19 +971,63 @@ const Dashboard = () => {
             {createType === 'chatbot' && (
               <>
                 <Form.Group className="mb-3">
-                  <Form.Label>Personality</Form.Label>
+                  <Form.Label>Personality <span className="text-danger">*</span></Form.Label>
                   <Form.Select 
-                    value={(newItemData as ChatbotFormData).personality || 'helpful'}
-                    onChange={(e) => setNewItemData(prev => ({ ...prev, personality: e.target.value }))}
-                    className="rounded-3"
+                    value={(newItemData as ChatbotFormData).personality || ''}
+                    onChange={(e) => handleFieldChange('personality', e.target.value)}
+                    className={`rounded-3 ${formErrors.personality ? 'is-invalid' : ''}`}
+                    isInvalid={!!formErrors.personality}
                   >
-                    <option value="helpful">Helpful</option>
-                    <option value="friendly">Friendly</option>
-                    <option value="professional">Professional</option>
-                    <option value="creative">Creative</option>
-                    <option value="analytical">Analytical</option>
+                    <option value="">Select personality type</option>
+                    {PERSONALITY_OPTIONS.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </Form.Select>
+                  {formErrors.personality && (
+                    <Form.Control.Feedback type="invalid">
+                      {formErrors.personality}
+                    </Form.Control.Feedback>
+                  )}
+                  <Form.Text className="text-muted">
+                    Choose the personality that best fits your assistant's purpose
+                  </Form.Text>
                 </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Template <span className="text-danger">*</span></Form.Label>
+                  <Form.Select 
+                    value={(newItemData as ChatbotFormData).template || ''}
+                    onChange={(e) => handleFieldChange('template', e.target.value)}
+                    className={`rounded-3 ${formErrors.template ? 'is-invalid' : ''}`}
+                    isInvalid={!!formErrors.template}
+                  >
+                    <option value="">Select a template</option>
+                    {/* Group templates by category */}
+                    {['Personal Assistant', 'Project Management', 'Marketing & Sales', 'Analytics & Data', 'Technical', 'Healthcare', 'Education', 'General'].map(category => (
+                      <optgroup key={category} label={category}>
+                        {TEMPLATE_OPTIONS
+                          .filter(template => template.category === category)
+                          .map(template => (
+                            <option key={template.value} value={template.value}>
+                              {template.label}
+                            </option>
+                          ))
+                        }
+                      </optgroup>
+                    ))}
+                  </Form.Select>
+                  {formErrors.template && (
+                    <Form.Control.Feedback type="invalid">
+                      {formErrors.template}
+                    </Form.Control.Feedback>
+                  )}
+                  <Form.Text className="text-muted">
+                    Select a template that matches your intended use case
+                  </Form.Text>
+                </Form.Group>
+
                 <Form.Group className="mb-3">
                   <Form.Label>Client (Optional)</Form.Label>
                   <Form.Select 
@@ -908,6 +1040,9 @@ const Dashboard = () => {
                       <option key={client.id} value={client.id}>{client.name}</option>
                     ))}
                   </Form.Select>
+                  <Form.Text className="text-muted">
+                    Optionally assign this assistant to a specific client
+                  </Form.Text>
                 </Form.Group>
               </>
             )}

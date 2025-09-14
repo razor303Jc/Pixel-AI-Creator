@@ -76,6 +76,7 @@ class ProjectCreate(BaseModel):
     description: Optional[str] = None
     assistant_type: str = "chatbot"  # chatbot, voice_assistant, automation_bot
     complexity: str = "basic"  # basic, advanced, enterprise
+    personality_config: Optional[Dict[str, Any]] = None
 
 
 class ProjectResponse(BaseModel):

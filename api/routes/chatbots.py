@@ -58,6 +58,7 @@ async def create_chatbot(
             description=project_data.description,
             assistant_type=project_data.assistant_type,
             complexity=project_data.complexity,
+            personality_config=project_data.personality_config,
             status="pending",
             progress=0,
         )
