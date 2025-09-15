@@ -147,10 +147,9 @@ async def get_user_builds(
     try:
         # Get all projects for the current user that have build_ids
         result = await db.execute(
-            select(Project).where(
-                Project.user_id == current_user["id"],
-                Project.build_id.isnot(None)
-            ).order_by(Project.created_at.desc())
+            select(Project)
+            .where(Project.user_id == current_user["id"], Project.build_id.isnot(None))
+            .order_by(Project.created_at.desc())
         )
         projects = result.scalars().all()
 

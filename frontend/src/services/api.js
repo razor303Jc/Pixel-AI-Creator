@@ -205,7 +205,11 @@ export const apiService = {
     },
 
     create: async (chatbotData) => {
-      return retryRequest(() => apiClient.post("chatbots/", chatbotData));
+      // Extract auto_build from chatbotData to pass as query parameter
+      const { auto_build, ...data } = chatbotData;
+      const params = auto_build ? { auto_build: true } : {};
+
+      return retryRequest(() => apiClient.post("chatbots/", data, { params }));
     },
 
     update: async (chatbotId, chatbotData) => {
@@ -271,6 +275,37 @@ export const apiService = {
       return retryRequest(() =>
         apiClient.delete(`embeddings/delete/${embeddingId}`)
       );
+    },
+  },
+
+  // Build management endpoints
+  builds: {
+    getAll: async () => {
+      return retryRequest(() => apiClient.get("builds/"));
+    },
+
+    getStatus: async (buildId) => {
+      return retryRequest(() => apiClient.get(`builds/status/${buildId}`));
+    },
+
+    getLogs: async (buildId) => {
+      return retryRequest(() => apiClient.get(`builds/logs/${buildId}`));
+    },
+
+    queue: async (projectId) => {
+      return retryRequest(() => apiClient.post(`builds/queue/${projectId}`));
+    },
+
+    cancel: async (buildId) => {
+      return retryRequest(() => apiClient.delete(`builds/${buildId}`));
+    },
+
+    getDeployment: async (buildId) => {
+      return retryRequest(() => apiClient.get(`builds/deployment/${buildId}`));
+    },
+
+    cleanup: async (buildId) => {
+      return retryRequest(() => apiClient.post(`builds/cleanup/${buildId}`));
     },
   },
 

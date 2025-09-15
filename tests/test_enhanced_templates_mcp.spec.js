@@ -277,7 +277,7 @@ test.describe("Enhanced Templates with Form Validation", () => {
     await page.waitForSelector(
       '[data-testid="templates-title"], .card, .template-card',
       { timeout: 10000 }
-    });
+    );
   });
 
   test("should display MCP-enabled templates", async ({ page }) => {

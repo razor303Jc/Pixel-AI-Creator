@@ -8,17 +8,21 @@ import { test, expect } from "@playwright/test";
 test.describe("Template Form Validation Tests", () => {
   test.beforeEach(async ({ page }) => {
     console.log("🚀 Starting template form validation test...");
-    
+
     // Navigate to Docker frontend
     await page.goto("http://localhost:3002");
     await page.waitForLoadState("networkidle");
 
     // Login with specific credentials
     console.log("� Logging in with jc@razorflow.com...");
-    
+
     const emailInput = page.locator('input[type="email"], input[name="email"]');
-    const passwordInput = page.locator('input[type="password"], input[name="password"]');
-    const signInButton = page.locator('button:has-text("Sign In"), button[type="submit"]');
+    const passwordInput = page.locator(
+      'input[type="password"], input[name="password"]'
+    );
+    const signInButton = page.locator(
+      'button:has-text("Sign In"), button[type="submit"]'
+    );
 
     if (await emailInput.isVisible({ timeout: 5000 })) {
       await emailInput.fill("jc@razorflow.com");
@@ -30,10 +34,12 @@ test.describe("Template Form Validation Tests", () => {
 
     // Navigate to Templates page
     console.log("📋 Navigating to Templates page...");
-    
+
     // Wait for dashboard
-    await page.waitForSelector("nav, .navbar, .dashboard, h1, h2", { timeout: 15000 });
-    
+    await page.waitForSelector("nav, .navbar, .dashboard, h1, h2", {
+      timeout: 15000,
+    });
+
     // Look for Templates navigation
     const templatesSelectors = [
       'a:has-text("Templates")',
@@ -57,7 +63,7 @@ test.describe("Template Form Validation Tests", () => {
       }
     }
 
-        // Wait for Templates page to load
+    // Wait for Templates page to load
     await page.waitForSelector(
       '[data-testid="templates-title"], h2:has-text("Template"), .template-card, .card',
       { timeout: 10000 }
@@ -65,7 +71,9 @@ test.describe("Template Form Validation Tests", () => {
     console.log("✅ Templates page loaded");
   });
 
-  test("should open add template modal and test all form elements", async ({ page }) => {
+  test("should open add template modal and test all form elements", async ({
+    page,
+  }) => {
     console.log("🧪 Testing Add Template button and modal opening...");
 
     // Click Add Template button
@@ -92,7 +100,10 @@ test.describe("Template Form Validation Tests", () => {
     }
 
     if (!modalOpened) {
-      await page.screenshot({ path: "debug-no-add-button.png", fullPage: true });
+      await page.screenshot({
+        path: "debug-no-add-button.png",
+        fullPage: true,
+      });
       throw new Error("Could not find Add Template button");
     }
 
@@ -113,22 +124,26 @@ test.describe("Template Form Validation Tests", () => {
     console.log("🧪 Testing template name field validation...");
 
     // Open modal
-    await page.click('[data-testid="create-template-btn"], button:has-text("Create Template")');
+    await page.click(
+      '[data-testid="create-template-btn"], button:has-text("Create Template")'
+    );
     await page.waitForSelector('.modal, [data-testid="create-template-modal"]');
 
     // Test name field validation
-    const nameInput = page.locator('[data-testid="template-name-input"], input[placeholder*="name" i]');
-    
+    const nameInput = page.locator(
+      '[data-testid="template-name-input"], input[placeholder*="name" i]'
+    );
+
     // Test too short
     await nameInput.fill("ab");
     await nameInput.blur();
-    
+
     // Test valid name
     await nameInput.fill("Valid Template Name");
     await nameInput.blur();
-    
+
     console.log("✅ Name field validation tested");
-    
+
     await page.screenshot({
       path: "test-results/name-field-validation.png",
     });
@@ -137,46 +152,74 @@ test.describe("Template Form Validation Tests", () => {
   test("should test all dropdown selects", async ({ page }) => {
     console.log("🧪 Testing dropdown selections...");
 
-    await page.click('[data-testid="create-template-btn"], button:has-text("Create Template")');
-    await page.waitForSelector('.modal');
+    await page.click(
+      '[data-testid="create-template-btn"], button:has-text("Create Template")'
+    );
+    await page.waitForSelector(".modal");
 
     // Test category dropdown
-    const categorySelect = page.locator('[data-testid="template-category-select"], select:has(option:has-text("technical"))');
+    const categorySelect = page.locator(
+      '[data-testid="template-category-select"], select:has(option:has-text("technical"))'
+    );
     if (await categorySelect.isVisible()) {
-      await categorySelect.selectOption('technical');
+      await categorySelect.selectOption("technical");
       console.log("✅ Category selected: technical");
     }
 
     // Test personality dropdown
-    const personalitySelect = page.locator('[data-testid="template-personality-select"], select:has(option:has-text("professional"))');
+    const personalitySelect = page.locator(
+      '[data-testid="template-personality-select"], select:has(option:has-text("professional"))'
+    );
     if (await personalitySelect.isVisible()) {
-      await personalitySelect.selectOption('professional');
+      await personalitySelect.selectOption("professional");
       console.log("✅ Personality selected: professional");
     }
-    
+
     await page.screenshot({
       path: "test-results/dropdown-selections.png",
     });
   });
 
-  test("should test complete form submission with valid data", async ({ page }) => {
+  test("should test complete form submission with valid data", async ({
+    page,
+  }) => {
     console.log("🧪 Testing complete form submission...");
 
-    await page.click('[data-testid="create-template-btn"], button:has-text("Create Template")');
-    await page.waitForSelector('.modal');
+    await page.click(
+      '[data-testid="create-template-btn"], button:has-text("Create Template")'
+    );
+    await page.waitForSelector(".modal");
 
     // Fill all required fields with valid data
-    await page.fill('[data-testid="template-name-input"], input[placeholder*="name" i]', "Playwright Test Template");
-    
-    await page.fill('[data-testid="template-description-input"], textarea[placeholder*="description" i]', "This is a comprehensive test template created by Playwright automation testing to validate form functionality and user experience.");
-    
-    await page.selectOption('[data-testid="template-category-select"], select:has(option:has-text("technical"))', 'technical');
-    
-    await page.selectOption('[data-testid="template-personality-select"], select:has(option:has-text("professional"))', 'professional');
-    
-    await page.fill('[data-testid="template-tags-input"], input[placeholder*="tag" i]', "test, automation, validation, playwright");
-    
-    await page.fill('[data-testid="template-instructions-input"], textarea[placeholder*="instruction" i]', "This template provides comprehensive testing instructions for automated form validation. It includes detailed guidelines for input field testing, dropdown validation, and form submission verification to ensure robust user experience.");
+    await page.fill(
+      '[data-testid="template-name-input"], input[placeholder*="name" i]',
+      "Playwright Test Template"
+    );
+
+    await page.fill(
+      '[data-testid="template-description-input"], textarea[placeholder*="description" i]',
+      "This is a comprehensive test template created by Playwright automation testing to validate form functionality and user experience."
+    );
+
+    await page.selectOption(
+      '[data-testid="template-category-select"], select:has(option:has-text("technical"))',
+      "technical"
+    );
+
+    await page.selectOption(
+      '[data-testid="template-personality-select"], select:has(option:has-text("professional"))',
+      "professional"
+    );
+
+    await page.fill(
+      '[data-testid="template-tags-input"], input[placeholder*="tag" i]',
+      "test, automation, validation, playwright"
+    );
+
+    await page.fill(
+      '[data-testid="template-instructions-input"], textarea[placeholder*="instruction" i]',
+      "This template provides comprehensive testing instructions for automated form validation. It includes detailed guidelines for input field testing, dropdown validation, and form submission verification to ensure robust user experience."
+    );
 
     // Take screenshot before submission
     await page.screenshot({
@@ -184,67 +227,93 @@ test.describe("Template Form Validation Tests", () => {
     });
 
     // Test submit button state
-    const submitButton = page.locator('[data-testid="submit-template-btn"], button:has-text("Create Template")');
+    const submitButton = page.locator(
+      '[data-testid="submit-template-btn"], button:has-text("Create Template")'
+    );
     await expect(submitButton).toBeEnabled();
-    
+
     // Submit the form
     await submitButton.click();
-    
+
     // Wait for success message or modal close
     try {
-      await page.waitForSelector('.alert-success, .success-message', { timeout: 5000 });
+      await page.waitForSelector(".alert-success, .success-message", {
+        timeout: 5000,
+      });
       console.log("✅ Success message appeared");
     } catch (e) {
       console.log("⚠️ No success message found, checking if modal closed");
     }
-    
+
     await page.screenshot({
       path: "test-results/form-submission-complete.png",
     });
-    
+
     console.log("✅ Complete form submission test passed");
   });
 
   test("should test form validation with invalid data", async ({ page }) => {
     console.log("🧪 Testing form validation with invalid data...");
 
-    await page.click('[data-testid="create-template-btn"], button:has-text("Create Template")');
-    await page.waitForSelector('.modal');
+    await page.click(
+      '[data-testid="create-template-btn"], button:has-text("Create Template")'
+    );
+    await page.waitForSelector(".modal");
 
     // Test with invalid data
-    await page.fill('[data-testid="template-name-input"], input[placeholder*="name" i]', "ab"); // Too short
-    await page.fill('[data-testid="template-description-input"], textarea[placeholder*="description" i]', "short"); // Too short
-    await page.fill('[data-testid="template-instructions-input"], textarea[placeholder*="instruction" i]', "brief"); // Too short
+    await page.fill(
+      '[data-testid="template-name-input"], input[placeholder*="name" i]',
+      "ab"
+    ); // Too short
+    await page.fill(
+      '[data-testid="template-description-input"], textarea[placeholder*="description" i]',
+      "short"
+    ); // Too short
+    await page.fill(
+      '[data-testid="template-instructions-input"], textarea[placeholder*="instruction" i]',
+      "brief"
+    ); // Too short
 
     // Submit button should be disabled or show validation errors
-    const submitButton = page.locator('[data-testid="submit-template-btn"], button:has-text("Create Template")');
-    
+    const submitButton = page.locator(
+      '[data-testid="submit-template-btn"], button:has-text("Create Template")'
+    );
+
     try {
       await expect(submitButton).toBeDisabled();
       console.log("✅ Submit button correctly disabled with invalid data");
     } catch (e) {
-      console.log("⚠️ Submit button not disabled, checking for validation errors");
+      console.log(
+        "⚠️ Submit button not disabled, checking for validation errors"
+      );
     }
-    
+
     await page.screenshot({
       path: "test-results/invalid-form-validation.png",
     });
-    
+
     console.log("✅ Invalid data validation test passed");
   });
 
   test("should take comprehensive screenshot", async ({ page }) => {
     console.log("📸 Taking comprehensive screenshot...");
-    
+
     await page.screenshot({
       path: "test-results/templates-page-complete.png",
       fullPage: true,
     });
-    
+
     console.log("✅ Screenshot saved");
   });
 });
-    }
+
+// Additional test suite for form validation
+test.describe("Template Form Validation", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/dashboard");
+
+    // Navigate to templates tab
+    await page.click('[data-testid="templates-tab"]');
 
     // Wait for templates content to load
     await page.waitForSelector(
