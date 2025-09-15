@@ -17,7 +17,8 @@ import {
   Tab,
   Tabs,
   InputGroup,
-  Alert
+  Alert,
+  Dropdown
 } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import {
@@ -115,6 +116,8 @@ const Templates: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<number | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [formData, setFormData] = useState<TemplateFormData>({
     name: '',
@@ -800,7 +803,46 @@ const Templates: React.FC = () => {
   };
 
   const handleEditTemplate = (template: Template) => {
+    console.log('🔧 handleEditTemplate called with:', { 
+      name: template.name, 
+      tools: template.tools 
+    });
+    
     setSelectedTemplate(template);
+    
+    // Create default tools object with safe property access
+    const defaultTools = {
+      'web-search': { enabled: false, apiKey: '' },
+      'email': { enabled: false, apiKey: '' },
+      'calendar': { enabled: false, apiKey: '' },
+      'file-system': { enabled: false },
+      'database': { enabled: false, config: { host: '', port: '', database: '' } },
+      'api-client': { enabled: false, apiKey: '' },
+      'weather': { enabled: false, apiKey: '' },
+      'maps': { enabled: false, apiKey: '' },
+      'translation': { enabled: false, apiKey: '' },
+      'image-analysis': { enabled: false, apiKey: '' }
+    };
+
+    // Safely merge existing tools with defaults
+    let mergedTools = { ...defaultTools };
+    if (template.tools && typeof template.tools === 'object' && !Array.isArray(template.tools)) {
+      try {
+        // Safely merge each tool, ensuring each has the required properties
+        Object.keys(defaultTools).forEach(toolKey => {
+          if (template.tools?.[toolKey]) {
+            mergedTools[toolKey] = {
+              ...defaultTools[toolKey],
+              ...template.tools[toolKey]
+            };
+          }
+        });
+      } catch (error) {
+        console.error('Error processing tools:', error);
+        mergedTools = defaultTools;
+      }
+    }
+
     setFormData({
       name: template.name,
       description: template.description,
@@ -811,31 +853,31 @@ const Templates: React.FC = () => {
       tags: template.tags,
       scope: template.scope || 'general',
       trainingQA: template.trainingQA || [{ question: '', answer: '' }],
-      tools: typeof template.tools === 'object' && !Array.isArray(template.tools) 
-        ? template.tools 
-        : {
-            'web-search': { enabled: false, apiKey: '' },
-            'email': { enabled: false, apiKey: '' },
-            'calendar': { enabled: false, apiKey: '' },
-            'file-system': { enabled: false },
-            'database': { enabled: false, config: { host: '', port: '', database: '' } },
-            'api-client': { enabled: false, apiKey: '' },
-            'weather': { enabled: false, apiKey: '' },
-            'maps': { enabled: false, apiKey: '' },
-            'translation': { enabled: false, apiKey: '' },
-            'image-analysis': { enabled: false, apiKey: '' }
-          }
+      tools: mergedTools
     });
+    
     // Reset validation state for editing
     setFormErrors({});
     setFormTouched({});
     setIsFormValid(true); // Assume existing template data is valid
+    
+    console.log('🔧 About to show edit modal...');
     setShowEditModal(true);
+    console.log('🔧 Edit modal state set to true');
   };
 
   const handleDeleteTemplate = (templateId: number) => {
-    if (window.confirm('Are you sure you want to delete this template?')) {
-      setTemplates(prev => prev.filter(t => t.id !== templateId));
+    setTemplateToDelete(templateId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteTemplate = () => {
+    if (templateToDelete) {
+      setTemplates(prev => prev.filter(t => t.id !== templateToDelete));
+      const deletedTemplate = templates.find(t => t.id === templateToDelete);
+      showMessage(`Template "${deletedTemplate?.name}" deleted successfully!`, false);
+      setShowDeleteModal(false);
+      setTemplateToDelete(null);
     }
   };
 
@@ -895,6 +937,44 @@ const Templates: React.FC = () => {
       author: 'User'
     };
     setTemplates(prev => [...prev, duplicatedTemplate]);
+    showMessage(`Template "${template.name}" duplicated successfully!`, false);
+  };
+
+  const handleExportTemplate = (template: Template) => {
+    try {
+      // Create a clean export object without internal IDs and metadata
+      const exportData = {
+        name: template.name,
+        description: template.description,
+        category: template.category,
+        personality: template.personality,
+        instructions: template.instructions,
+        tools: template.tools,
+        integrations: template.integrations,
+        tags: template.tags,
+        scope: template.scope,
+        trainingQA: template.trainingQA,
+        version: "1.0",
+        exportedAt: new Date().toISOString(),
+        exportedBy: "Pixel AI Creator"
+      };
+
+      // Create and download JSON file
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = `${template.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_template.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      showMessage(`Template "${template.name}" exported successfully!`, false);
+    } catch (error) {
+      console.error('Error exporting template:', error);
+      showMessage('Failed to export template. Please try again.', true);
+    }
   };
 
   // Animation variants
@@ -1062,55 +1142,43 @@ const Templates: React.FC = () => {
                         )}
                       </div>
                       {isTemplateEditable(template) ? (
-                        <div className="dropdown">
-                          <Button 
+                        <Dropdown>
+                          <Dropdown.Toggle 
                             variant="outline-secondary" 
-                            size="sm" 
-                            className="dropdown-toggle" 
-                            data-bs-toggle="dropdown"
+                            size="sm"
                             data-testid={`template-dropdown-${template.id}`}
                           >
                             <Edit size={16} />
-                          </Button>
-                          <ul className="dropdown-menu">
-                            <li>
-                              <button 
-                                className="dropdown-item" 
-                                type="button"
-                                onClick={() => handleEditTemplate(template)}
-                                data-testid={`edit-template-${template.id}`}
-                              >
-                                <Edit size={14} className="me-2" />Edit
-                              </button>
-                            </li>
-                            <li>
-                              <button 
-                                className="dropdown-item" 
-                                type="button"
-                                onClick={() => handleDuplicateTemplate(template)}
-                                data-testid={`duplicate-template-${template.id}`}
-                              >
-                                <Copy size={14} className="me-2" />Duplicate
-                              </button>
-                            </li>
-                            <li>
-                              <button className="dropdown-item" type="button">
-                                <Download size={14} className="me-2" />Export
-                              </button>
-                            </li>
-                            <li><hr className="dropdown-divider" /></li>
-                            <li>
-                              <button 
-                                className="dropdown-item text-danger" 
-                                type="button"
-                                onClick={() => handleDeleteTemplate(template.id)}
-                                data-testid={`delete-template-${template.id}`}
-                              >
-                                <Trash2 size={14} className="me-2" />Delete
-                              </button>
-                            </li>
-                          </ul>
-                        </div>
+                          </Dropdown.Toggle>
+                          <Dropdown.Menu>
+                            <Dropdown.Item
+                              onClick={() => handleEditTemplate(template)}
+                              data-testid={`edit-template-${template.id}`}
+                            >
+                              <Edit size={14} className="me-2" />Edit
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => handleDuplicateTemplate(template)}
+                              data-testid={`duplicate-template-${template.id}`}
+                            >
+                              <Copy size={14} className="me-2" />Duplicate
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                              onClick={() => handleExportTemplate(template)}
+                              data-testid={`export-template-${template.id}`}
+                            >
+                              <Download size={14} className="me-2" />Export
+                            </Dropdown.Item>
+                            <Dropdown.Divider />
+                            <Dropdown.Item
+                              onClick={() => handleDeleteTemplate(template.id)}
+                              data-testid={`delete-template-${template.id}`}
+                              className="text-danger"
+                            >
+                              <Trash2 size={14} className="me-2" />Delete
+                            </Dropdown.Item>
+                          </Dropdown.Menu>
+                        </Dropdown>
                       ) : (
                         <div className="d-flex align-items-center">
                           <Badge bg="info" className="me-2 small">Default Template</Badge>
@@ -2575,6 +2643,47 @@ const Templates: React.FC = () => {
             ) : (
               'Update Template'
             )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal 
+        show={showDeleteModal} 
+        onHide={() => setShowDeleteModal(false)}
+        data-testid="delete-confirmation-modal"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <Trash2 className="me-2 text-danger" />
+            Confirm Delete
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Are you sure you want to delete this template?</p>
+          {templateToDelete && (
+            <div className="alert alert-warning">
+              <strong>Template:</strong> {templates.find(t => t.id === templateToDelete)?.name}
+            </div>
+          )}
+          <p className="text-muted small">This action cannot be undone.</p>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowDeleteModal(false)}
+            data-testid="cancel-delete-btn"
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="danger"
+            onClick={confirmDeleteTemplate}
+            data-testid="confirm-delete-btn"
+          >
+            <Trash2 size={16} className="me-2" />
+            Delete Template
           </Button>
         </Modal.Footer>
       </Modal>

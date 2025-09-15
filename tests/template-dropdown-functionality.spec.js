@@ -183,11 +183,9 @@ test.describe("Template Dropdown Functionality", () => {
           console.log("   ✅ Edit modal opens for user template");
 
           // Close modal
-          const closeButton = editModal.locator(
-            '.btn-close, button:has-text("Cancel")'
-          );
-          if (await closeButton.isVisible()) {
-            await closeButton.click();
+          const cancelButton = editModal.locator('button:has-text("Cancel")');
+          if (await cancelButton.isVisible()) {
+            await cancelButton.click();
           }
         }
       }
@@ -227,16 +225,10 @@ test.describe("Template Dropdown Functionality", () => {
       "════════════════════════════════════════════════════════════════"
     );
 
-    await page.goto("http://localhost:3002");
-
-    // Navigate to Templates section
-    await page.click('[data-testid="dashboard-templates"]');
-    await page.waitForTimeout(2000);
-
     console.log("\n🔄 SWITCHING TO PUBLIC TEMPLATES TAB...");
 
     // Click on Public Templates tab to see system templates
-    await page.click('[data-testid="public-templates-tab"]');
+    await page.click('text="Public Templates"');
     await page.waitForTimeout(2000);
 
     // Wait for templates to load
