@@ -111,6 +111,7 @@ class Project(Base):
     generated_code = Column(Text)
     deployment_config = Column(JSON)
     personality_config = Column(JSON)
+    build_id = Column(String, nullable=True)  # Docker build job ID
 
     # Business logic
     business_rules = Column(JSON)

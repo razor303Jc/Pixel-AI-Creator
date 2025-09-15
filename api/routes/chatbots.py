@@ -53,8 +53,7 @@ async def create_chatbot(
 
         if not client:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, 
-                detail="Client not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Client not found"
             )
 
         # Create new project
@@ -81,15 +80,15 @@ async def create_chatbot(
                     "description": new_project.description,
                     "assistant_type": new_project.assistant_type,
                     "complexity": new_project.complexity,
-                    "personality_config": new_project.personality_config or {}
+                    "personality_config": new_project.personality_config or {},
                 }
-                
+
                 build_id = await build_manager.queue_build(
                     project_id=new_project.id,
                     user_id=current_user["id"],
-                    chatbot_config=chatbot_config
+                    chatbot_config=chatbot_config,
                 )
-                
+
                 # Update project with build ID and status
                 await db.execute(
                     update(Project)
@@ -98,9 +97,9 @@ async def create_chatbot(
                 )
                 await db.commit()
                 await db.refresh(new_project)
-                
+
                 logger.info(f"Auto-build queued for project {new_project.id}")
-                
+
             except Exception as build_error:
                 logger.error(f"Failed to queue auto-build: {str(build_error)}")
                 # Don't fail the project creation if build queueing fails

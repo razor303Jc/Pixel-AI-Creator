@@ -44,7 +44,7 @@ import AccountSettings from '../auth/AccountSettings';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import Templates from './Templates';
 import EnhancedClientDashboard from './EnhancedClientDashboard';
-import BuildStatus from '../build/BuildStatus';
+import BuildDashboard from '../build/BuildDashboard';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Interface definitions for form data
@@ -912,7 +912,7 @@ const Dashboard = () => {
 
         {/* Build Status View */}
         {activeView === 'build-status' && (
-          <BuildStatus />
+          <BuildDashboard />
         )}
       </Container>
 
