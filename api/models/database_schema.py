@@ -260,6 +260,7 @@ class Chatbot(Base):
     deployment_url = Column(String(500), nullable=True)
     deployment_key = Column(String(255), nullable=True)
     is_deployed = Column(Boolean, default=False, nullable=False)
+    build_id = Column(String(255), nullable=True)  # Docker build job ID
 
     # Business metrics
     estimated_cost = Column(Float, nullable=True)

@@ -44,6 +44,7 @@ import AccountSettings from '../auth/AccountSettings';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import Templates from './Templates';
 import EnhancedClientDashboard from './EnhancedClientDashboard';
+import BuildStatus from '../build/BuildStatus';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Interface definitions for form data
@@ -62,6 +63,7 @@ interface ChatbotFormData {
   personality?: string;
   template?: string;
   client_id?: string;
+  auto_build?: boolean;
 }
 
 type FormData = ClientFormData | ChatbotFormData;
@@ -340,12 +342,20 @@ const Dashboard = () => {
             template: chatbotData.template || 'general-basic'
           },
           client_id: chatbotData.client_id ? parseInt(chatbotData.client_id) : null,
+          auto_build: chatbotData.auto_build || false,
         });
       }
 
       // If we reach here, the operation was successful
       closeCreateModal();
-      setToastMessage(`${createType === 'client' ? 'Client' : 'Assistant'} created successfully!`);
+      
+      // Set success message based on auto_build option
+      if (createType === 'chatbot' && (newItemData as ChatbotFormData).auto_build) {
+        setToastMessage('Assistant created successfully! Build job has been queued - check the Build Status tab to monitor progress.');
+      } else {
+        setToastMessage(`${createType === 'client' ? 'Client' : 'Assistant'} created successfully!`);
+      }
+      
       setShowToast(true);
     } catch (error) {
       console.error('Failed to create item:', error);
@@ -515,6 +525,13 @@ const Dashboard = () => {
                 data-testid="nav-enhanced-dashboard"
               >
                 Enhanced Dashboard
+              </Nav.Link>
+              <Nav.Link 
+                active={activeView === 'build-status'}
+                onClick={() => setActiveView('build-status')}
+                data-testid="nav-build-status"
+              >
+                Build Status
               </Nav.Link>
             </Nav>
             <Nav>
@@ -892,6 +909,11 @@ const Dashboard = () => {
         {activeView === 'enhanced-dashboard' && (
           <EnhancedClientDashboard />
         )}
+
+        {/* Build Status View */}
+        {activeView === 'build-status' && (
+          <BuildStatus />
+        )}
       </Container>
 
       {/* Create Modal */}
@@ -1042,6 +1064,19 @@ const Dashboard = () => {
                   </Form.Select>
                   <Form.Text className="text-muted">
                     Optionally assign this assistant to a specific client
+                  </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Check
+                    type="checkbox"
+                    id="auto-build-checkbox"
+                    label="Auto-build and deploy after creation"
+                    checked={(newItemData as ChatbotFormData).auto_build || false}
+                    onChange={(e) => setNewItemData(prev => ({ ...prev, auto_build: e.target.checked }))}
+                  />
+                  <Form.Text className="text-muted">
+                    Automatically queue a Docker build job to create a deployable chatbot instance
                   </Form.Text>
                 </Form.Group>
               </>

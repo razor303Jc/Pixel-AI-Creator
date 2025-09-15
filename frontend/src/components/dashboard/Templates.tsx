@@ -159,9 +159,9 @@ const Templates: React.FC = () => {
   // Helper function to determine if template is editable by user
   const isTemplateEditable = (template: Template) => {
     // System templates have authors like 'Admin', 'PMTeam', etc.
-    // User templates have email addresses as authors
+    // User templates have email addresses as authors or 'User' for duplicated templates
     const systemAuthors = ['Admin', 'PMTeam', 'SalesTeam', 'Support', 'TechTeam', 'DataTeam', 'System'];
-    return !systemAuthors.includes(template.author) && template.author.includes('@');
+    return !systemAuthors.includes(template.author) && (template.author.includes('@') || template.author === 'User');
   };
 
   // Mock data for demonstration
@@ -934,7 +934,7 @@ const Templates: React.FC = () => {
       createdAt: new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0],
       usageCount: 0,
-      author: 'User'
+      author: 'user@example.com' // Simulated user email for now - will be replaced with actual user auth later
     };
     setTemplates(prev => [...prev, duplicatedTemplate]);
     showMessage(`Template "${template.name}" duplicated successfully!`, false);

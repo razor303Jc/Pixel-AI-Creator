@@ -1,0 +1,111 @@
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Dict, Any
+import os
+import openai
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="{{CHATBOT_NAME}}",
+    description="{{CHATBOT_DESCRIPTION}}",
+    version="1.0.0"
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize OpenAI client
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Configuration
+PERSONALITY_TYPE = "{{PERSONALITY_TYPE}}"
+SYSTEM_PROMPT = """{{SYSTEM_PROMPT}}"""
+
+# Pydantic models
+class ChatMessage(BaseModel):
+    message: str
+    conversation_id: str = "default"
+
+class ChatResponse(BaseModel):
+    response: str
+    conversation_id: str
+
+# In-memory conversation storage (replace with database in production)
+conversations: Dict[str, List[Dict[str, str]]] = {}
+
+@app.get("/")
+async def root():
+    return {"message": "{{CHATBOT_NAME}} is running!", "version": "1.0.0"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "chatbot": "{{CHATBOT_NAME}}"}
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(message: ChatMessage):
+    try:
+        # Initialize conversation if not exists
+        if message.conversation_id not in conversations:
+            conversations[message.conversation_id] = []
+        
+        # Add user message to conversation
+        conversations[message.conversation_id].append({
+            "role": "user",
+            "content": message.message
+        })
+        
+        # Prepare messages for OpenAI
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        messages.extend(conversations[message.conversation_id])
+        
+        # Call OpenAI API
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            max_tokens={{MAX_TOKENS}},
+            temperature={{TEMPERATURE}}
+        )
+        
+        assistant_response = response.choices[0].message.content
+        
+        # Add assistant response to conversation
+        conversations[message.conversation_id].append({
+            "role": "assistant", 
+            "content": assistant_response
+        })
+        
+        return ChatResponse(
+            response=assistant_response,
+            conversation_id=message.conversation_id
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating response: {str(e)}")
+
+@app.get("/conversations/{conversation_id}")
+async def get_conversation(conversation_id: str):
+    if conversation_id not in conversations:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    return {"conversation_id": conversation_id, "messages": conversations[conversation_id]}
+
+@app.delete("/conversations/{conversation_id}")
+async def clear_conversation(conversation_id: str):
+    if conversation_id in conversations:
+        del conversations[conversation_id]
+    return {"message": "Conversation cleared"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

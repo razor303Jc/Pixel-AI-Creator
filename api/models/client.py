@@ -95,6 +95,7 @@ class ProjectResponse(BaseModel):
     generated_code: Optional[str] = None
     deployment_config: Optional[Dict[str, Any]] = None
     personality_config: Optional[Dict[str, Any]] = None
+    build_id: Optional[str] = None  # Docker build job ID
 
     # Business logic
     business_rules: Optional[Dict[str, Any]] = None

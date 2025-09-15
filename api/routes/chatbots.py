@@ -5,7 +5,7 @@ This module provides CRUD operations for chatbot project management.
 All endpoints require proper JWT authentication and role-based access control.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, func, or_
 from typing import List, Optional, Dict, Any
@@ -21,6 +21,9 @@ from core.database import get_db, Project, Client
 # Import models
 from models.client import ProjectCreate, ProjectResponse
 
+# Import build queue
+from services.build_queue import build_manager
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -31,6 +34,7 @@ router = APIRouter(prefix="/chatbots", tags=["chatbots"])
 @router.post("/", response_model=ProjectResponse)
 async def create_chatbot(
     project_data: ProjectCreate,
+    auto_build: bool = Query(False, description="Automatically queue build"),
     db: AsyncSession = Depends(get_db),
     current_user: Dict[str, Any] = Depends(get_current_user),
 ):
@@ -38,6 +42,7 @@ async def create_chatbot(
     Create a new chatbot project.
 
     Requires authentication. Users can create chatbots for existing clients.
+    If auto_build is True, the project will be automatically queued for building.
     """
     try:
         # Verify client exists
@@ -48,7 +53,8 @@ async def create_chatbot(
 
         if not client:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Client not found"
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="Client not found"
             )
 
         # Create new project
@@ -67,8 +73,41 @@ async def create_chatbot(
         await db.commit()
         await db.refresh(new_project)
 
+        # If auto_build is requested, queue the build
+        if auto_build:
+            try:
+                chatbot_config = {
+                    "name": new_project.name,
+                    "description": new_project.description,
+                    "assistant_type": new_project.assistant_type,
+                    "complexity": new_project.complexity,
+                    "personality_config": new_project.personality_config or {}
+                }
+                
+                build_id = await build_manager.queue_build(
+                    project_id=new_project.id,
+                    user_id=current_user["id"],
+                    chatbot_config=chatbot_config
+                )
+                
+                # Update project with build ID and status
+                await db.execute(
+                    update(Project)
+                    .where(Project.id == new_project.id)
+                    .values(status="queued", build_id=build_id)
+                )
+                await db.commit()
+                await db.refresh(new_project)
+                
+                logger.info(f"Auto-build queued for project {new_project.id}")
+                
+            except Exception as build_error:
+                logger.error(f"Failed to queue auto-build: {str(build_error)}")
+                # Don't fail the project creation if build queueing fails
+
         logger.info(
-            f"Chatbot project created: {new_project.name} by user {current_user['email']}"
+            f"Chatbot project created: {new_project.name} "
+            f"by user {current_user['email']}"
         )
         return new_project
 
