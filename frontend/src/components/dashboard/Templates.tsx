@@ -16,7 +16,8 @@ import {
   Badge,
   Tab,
   Tabs,
-  InputGroup
+  InputGroup,
+  Alert
 } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import {
@@ -30,7 +31,9 @@ import {
   Star,
   Clock,
   User,
-  Bot
+  Bot,
+  CheckCircle,
+  XCircle
 } from 'lucide-react';
 
 interface Template {
@@ -47,7 +50,9 @@ interface Template {
   usageCount: number;
   author: string;
   tags: string[];
-  tools?: TemplateTools[];
+  scope?: 'general' | 'specialized' | 'expert' | 'domain-specific';
+  trainingQA?: Array<{ question: string; answer: string }>;
+  tools?: TemplateTools[] | {[key: string]: { enabled: boolean; apiKey?: string; config?: any }};
   integrations?: TemplateIntegration[];
 }
 
@@ -87,7 +92,20 @@ interface TemplateFormData {
   instructions: string;
   isPublic: boolean;
   tags: string[];
-  tools?: TemplateTools[];
+  scope: 'general' | 'specialized' | 'expert' | 'domain-specific';
+  trainingQA: {
+    question: string;
+    answer: string;
+  }[];
+  tools: {
+    [key: string]: {
+      enabled: boolean;
+      apiKey?: string;
+      config?: {
+        [key: string]: string;
+      };
+    };
+  };
   integrations?: TemplateIntegration[];
 }
 
@@ -105,11 +123,43 @@ const Templates: React.FC = () => {
     personality: 'professional',
     instructions: '',
     isPublic: false,
-    tags: []
+    tags: [],
+    scope: 'general',
+    trainingQA: [{ question: '', answer: '' }],
+    tools: {
+      'web-search': { enabled: false, apiKey: '' },
+      'email': { enabled: false, apiKey: '' },
+      'calendar': { enabled: false, apiKey: '' },
+      'file-system': { enabled: false },
+      'database': { enabled: false, config: { host: '', port: '', database: '' } },
+      'api-client': { enabled: false, apiKey: '' },
+      'weather': { enabled: false, apiKey: '' },
+      'maps': { enabled: false, apiKey: '' },
+      'translation': { enabled: false, apiKey: '' },
+      'image-analysis': { enabled: false, apiKey: '' }
+    }
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeTab, setActiveTab] = useState('my-templates');
+  
+  // Enhanced UX States
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [formTouched, setFormTouched] = useState<{[key: string]: boolean}>({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // Helper function to determine if template is editable by user
+  const isTemplateEditable = (template: Template) => {
+    // System templates have authors like 'Admin', 'PMTeam', etc.
+    // User templates have email addresses as authors
+    const systemAuthors = ['Admin', 'PMTeam', 'SalesTeam', 'Support', 'TechTeam', 'DataTeam', 'System'];
+    return !systemAuthors.includes(template.author) && template.author.includes('@');
+  };
 
   // Mock data for demonstration
   useEffect(() => {
@@ -527,6 +577,32 @@ const Templates: React.FC = () => {
               isEnabled: false
             }
           ]
+        },
+        // Example user-created template
+        {
+          id: 7,
+          name: 'My Custom Sales Assistant',
+          description: 'Personalized sales assistant created by user for specific client needs',
+          category: 'M&S',
+          personality: 'persuasive',
+          instructions: 'You are my personal sales assistant helping with lead qualification, follow-ups, and customer engagement. Focus on our specific product offerings and company values.',
+          isPublic: false,
+          isFavorite: false,
+          createdAt: '2024-01-25',
+          updatedAt: '2024-01-26',
+          usageCount: 12,
+          author: 'jc@razorflow-ai.com', // User email - makes this template editable
+          tags: ['sales', 'custom', 'leads', 'follow-up'],
+          scope: 'specialized',
+          trainingQA: [
+            { question: 'How do I qualify leads?', answer: 'Focus on budget, authority, need, and timeline (BANT framework).' },
+            { question: 'What are our main products?', answer: 'Our main offerings include AI solutions, automation tools, and consulting services.' }
+          ],
+          tools: {
+            'web-search': { enabled: true, apiKey: 'user-api-key' },
+            'email': { enabled: true, apiKey: 'user-email-key' },
+            'api-client': { enabled: false }
+          }
         }
       ]);
       setLoading(false);
@@ -546,8 +622,149 @@ const Templates: React.FC = () => {
 
   const categories = ['all', 'PA', 'PM', 'M&S', 'A&D', 'support', 'technical', 'general'];
 
-  // Modal handlers
-  const handleCreateTemplate = () => {
+  // Form validation functions
+  const validateField = (fieldName: string, value: any): string => {
+    switch (fieldName) {
+      case 'name':
+        if (!value || value.trim().length === 0) {
+          return 'Template name is required';
+        }
+        if (value.trim().length < 3) {
+          return 'Template name must be at least 3 characters long';
+        }
+        if (value.trim().length > 100) {
+          return 'Template name must be less than 100 characters';
+        }
+        // Check for duplicate names
+        const isDuplicate = templates.some(template => 
+          template.name.toLowerCase() === value.trim().toLowerCase() && 
+          (!selectedTemplate || template.id !== selectedTemplate.id)
+        );
+        if (isDuplicate) {
+          return 'A template with this name already exists';
+        }
+        return '';
+        
+      case 'description':
+        if (!value || value.trim().length === 0) {
+          return 'Description is required';
+        }
+        if (value.trim().length < 10) {
+          return 'Description must be at least 10 characters long';
+        }
+        if (value.trim().length > 500) {
+          return 'Description must be less than 500 characters';
+        }
+        return '';
+        
+      case 'instructions':
+        if (!value || value.trim().length === 0) {
+          return 'Instructions are required';
+        }
+        if (value.trim().length < 20) {
+          return 'Instructions must be at least 20 characters long';
+        }
+        if (value.trim().length > 2000) {
+          return 'Instructions must be less than 2000 characters';
+        }
+        return '';
+        
+      case 'tags':
+        if (!Array.isArray(value) || value.length === 0) {
+          return 'At least one tag is required';
+        }
+        if (value.length > 10) {
+          return 'Maximum 10 tags allowed';
+        }
+        const invalidTags = value.filter(tag => !tag || tag.trim().length === 0 || tag.trim().length > 30);
+        if (invalidTags.length > 0) {
+          return 'Tags must be 1-30 characters long';
+        }
+        return '';
+        
+      case 'category':
+        const validCategories = categories.slice(1); // Remove 'all'
+        if (!validCategories.includes(value)) {
+          return 'Please select a valid category';
+        }
+        return '';
+
+      case 'scope':
+        const validScopes = ['general', 'specialized', 'expert', 'domain-specific'];
+        if (!validScopes.includes(value)) {
+          return 'Please select a valid scope level';
+        }
+        return '';
+
+      case 'trainingQA':
+        if (!Array.isArray(value)) {
+          return 'Training Q&A must be an array';
+        }
+        // Check if all Q&A pairs have both question and answer if they exist
+        const invalidPairs = value.filter(qa => 
+          (qa.question.trim() && !qa.answer.trim()) || 
+          (!qa.question.trim() && qa.answer.trim())
+        );
+        if (invalidPairs.length > 0) {
+          return 'Each Q&A pair must have both question and answer filled';
+        }
+        return '';
+        
+      default:
+        return '';
+    }
+  };
+
+  const validateAllFields = (): boolean => {
+    const errors: {[key: string]: string} = {};
+    
+    errors.name = validateField('name', formData.name);
+    errors.description = validateField('description', formData.description);
+    errors.instructions = validateField('instructions', formData.instructions);
+    errors.tags = validateField('tags', formData.tags);
+    errors.category = validateField('category', formData.category);
+    errors.scope = validateField('scope', formData.scope);
+    errors.trainingQA = validateField('trainingQA', formData.trainingQA);
+    
+    setFormErrors(errors);
+    
+    const hasErrors = Object.values(errors).some(error => error !== '');
+    setIsFormValid(!hasErrors);
+    return !hasErrors;
+  };
+
+  const handleFieldChange = (fieldName: string, value: any) => {
+    // Update form data
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
+    
+    // Mark field as touched
+    setFormTouched(prev => ({ ...prev, [fieldName]: true }));
+    
+    // Validate the specific field if it's been touched
+    if (formTouched[fieldName] || Object.keys(formTouched).length > 0) {
+      const error = validateField(fieldName, value);
+      setFormErrors(prev => ({ ...prev, [fieldName]: error }));
+      
+      // Update overall form validity
+      const updatedErrors = { ...formErrors, [fieldName]: error };
+      const hasErrors = Object.values(updatedErrors).some(err => err !== '');
+      setIsFormValid(!hasErrors);
+    }
+  };
+
+  const showMessage = (message: string, isError: boolean = false) => {
+    if (isError) {
+      setErrorMessage(message);
+      setShowErrorMessage(true);
+      setTimeout(() => setShowErrorMessage(false), 5000);
+    } else {
+      setSuccessMessage(message);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    }
+  };
+
+  const resetForm = () => {
     setFormData({
       name: '',
       description: '',
@@ -555,8 +772,30 @@ const Templates: React.FC = () => {
       personality: 'professional',
       instructions: '',
       isPublic: false,
-      tags: []
+      tags: [],
+      scope: 'general',
+      trainingQA: [{ question: '', answer: '' }],
+      tools: {
+        'web-search': { enabled: false, apiKey: '' },
+        'email': { enabled: false, apiKey: '' },
+        'calendar': { enabled: false, apiKey: '' },
+        'file-system': { enabled: false },
+        'database': { enabled: false, config: { host: '', port: '', database: '' } },
+        'api-client': { enabled: false, apiKey: '' },
+        'weather': { enabled: false, apiKey: '' },
+        'maps': { enabled: false, apiKey: '' },
+        'translation': { enabled: false, apiKey: '' },
+        'image-analysis': { enabled: false, apiKey: '' }
+      }
     });
+    setFormErrors({});
+    setFormTouched({});
+    setIsFormValid(false);
+  };
+
+  // Modal handlers
+  const handleCreateTemplate = () => {
+    resetForm();
     setShowCreateModal(true);
   };
 
@@ -569,8 +808,28 @@ const Templates: React.FC = () => {
       personality: template.personality,
       instructions: template.instructions,
       isPublic: template.isPublic,
-      tags: template.tags
+      tags: template.tags,
+      scope: template.scope || 'general',
+      trainingQA: template.trainingQA || [{ question: '', answer: '' }],
+      tools: typeof template.tools === 'object' && !Array.isArray(template.tools) 
+        ? template.tools 
+        : {
+            'web-search': { enabled: false, apiKey: '' },
+            'email': { enabled: false, apiKey: '' },
+            'calendar': { enabled: false, apiKey: '' },
+            'file-system': { enabled: false },
+            'database': { enabled: false, config: { host: '', port: '', database: '' } },
+            'api-client': { enabled: false, apiKey: '' },
+            'weather': { enabled: false, apiKey: '' },
+            'maps': { enabled: false, apiKey: '' },
+            'translation': { enabled: false, apiKey: '' },
+            'image-analysis': { enabled: false, apiKey: '' }
+          }
     });
+    // Reset validation state for editing
+    setFormErrors({});
+    setFormTouched({});
+    setIsFormValid(true); // Assume existing template data is valid
     setShowEditModal(true);
   };
 
@@ -581,32 +840,47 @@ const Templates: React.FC = () => {
   };
 
   const handleSubmitTemplate = async (isEdit: boolean = false) => {
-    setLoading(true);
+    // Validate all fields before submission
+    if (!validateAllFields()) {
+      showMessage('Please fix the errors below before submitting', true);
+      return;
+    }
     
-    // Simulate API call
-    setTimeout(() => {
-      if (isEdit && selectedTemplate) {
-        setTemplates(prev => prev.map(t => 
-          t.id === selectedTemplate.id 
-            ? { ...t, ...formData, updatedAt: new Date().toISOString().split('T')[0] }
-            : t
-        ));
-        setShowEditModal(false);
-      } else {
-        const newTemplate: Template = {
-          id: Date.now(),
-          ...formData,
-          isFavorite: false,
-          createdAt: new Date().toISOString().split('T')[0],
-          updatedAt: new Date().toISOString().split('T')[0],
-          usageCount: 0,
-          author: 'User'
-        };
-        setTemplates(prev => [...prev, newTemplate]);
-        setShowCreateModal(false);
-      }
-      setLoading(false);
-    }, 500);
+    setIsSubmitting(true);
+    
+    try {
+      // Simulate API call
+      setTimeout(() => {
+        if (isEdit && selectedTemplate) {
+          setTemplates(prev => prev.map(t => 
+            t.id === selectedTemplate.id 
+              ? { ...t, ...formData, updatedAt: new Date().toISOString().split('T')[0] }
+              : t
+          ));
+          setShowEditModal(false);
+          showMessage(`Template "${formData.name}" updated successfully!`);
+        } else {
+          const newTemplate: Template = {
+            id: Date.now(),
+            ...formData,
+            isFavorite: false,
+            createdAt: new Date().toISOString().split('T')[0],
+            updatedAt: new Date().toISOString().split('T')[0],
+            usageCount: 0,
+            author: 'User'
+          };
+          setTemplates(prev => [...prev, newTemplate]);
+          setShowCreateModal(false);
+          showMessage(`Template "${formData.name}" created successfully!`);
+        }
+        resetForm();
+        setIsSubmitting(false);
+      }, 500);
+    } catch (error) {
+      console.error('Error saving template:', error);
+      showMessage('Failed to save template. Please try again.', true);
+      setIsSubmitting(false);
+    }
   };
 
   const handleDuplicateTemplate = (template: Template) => {
@@ -716,6 +990,35 @@ const Templates: React.FC = () => {
         </Tab>
       </Tabs>
 
+      {/* Success and Error Messages */}
+      {showSuccessMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="mb-3"
+        >
+          <Alert variant="success" className="d-flex align-items-center">
+            <CheckCircle size={20} className="me-2" />
+            {successMessage}
+          </Alert>
+        </motion.div>
+      )}
+
+      {showErrorMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="mb-3"
+        >
+          <Alert variant="danger" className="d-flex align-items-center">
+            <XCircle size={20} className="me-2" />
+            {errorMessage}
+          </Alert>
+        </motion.div>
+      )}
+
       {/* Templates Grid */}
       <motion.div
         variants={containerVariants}
@@ -754,50 +1057,74 @@ const Templates: React.FC = () => {
                       <div className="d-flex align-items-center">
                         <h6 className="fw-bold mb-0">{template.name}</h6>
                         {template.isFavorite && <Star size={16} className="text-warning ms-2" />}
+                        {!isTemplateEditable(template) && (
+                          <Badge bg="secondary" className="ms-2 small">System</Badge>
+                        )}
                       </div>
-                      <div className="dropdown">
-                        <Button variant="outline-secondary" size="sm" className="dropdown-toggle" data-bs-toggle="dropdown">
-                          <Edit size={16} />
-                        </Button>
-                        <ul className="dropdown-menu">
-                          <li>
-                            <a 
-                              className="dropdown-item" 
-                              href="#" 
-                              onClick={() => handleEditTemplate(template)}
-                              data-testid={`edit-template-${template.id}`}
-                            >
-                              <Edit size={14} className="me-2" />Edit
-                            </a>
-                          </li>
-                          <li>
-                            <a 
-                              className="dropdown-item" 
-                              href="#" 
-                              onClick={() => handleDuplicateTemplate(template)}
-                              data-testid={`duplicate-template-${template.id}`}
-                            >
-                              <Copy size={14} className="me-2" />Duplicate
-                            </a>
-                          </li>
-                          <li>
-                            <a className="dropdown-item" href="#">
-                              <Download size={14} className="me-2" />Export
-                            </a>
-                          </li>
-                          <li><hr className="dropdown-divider" /></li>
-                          <li>
-                            <a 
-                              className="dropdown-item text-danger" 
-                              href="#" 
-                              onClick={() => handleDeleteTemplate(template.id)}
-                              data-testid={`delete-template-${template.id}`}
-                            >
-                              <Trash2 size={14} className="me-2" />Delete
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
+                      {isTemplateEditable(template) ? (
+                        <div className="dropdown">
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm" 
+                            className="dropdown-toggle" 
+                            data-bs-toggle="dropdown"
+                            data-testid={`template-dropdown-${template.id}`}
+                          >
+                            <Edit size={16} />
+                          </Button>
+                          <ul className="dropdown-menu">
+                            <li>
+                              <button 
+                                className="dropdown-item" 
+                                type="button"
+                                onClick={() => handleEditTemplate(template)}
+                                data-testid={`edit-template-${template.id}`}
+                              >
+                                <Edit size={14} className="me-2" />Edit
+                              </button>
+                            </li>
+                            <li>
+                              <button 
+                                className="dropdown-item" 
+                                type="button"
+                                onClick={() => handleDuplicateTemplate(template)}
+                                data-testid={`duplicate-template-${template.id}`}
+                              >
+                                <Copy size={14} className="me-2" />Duplicate
+                              </button>
+                            </li>
+                            <li>
+                              <button className="dropdown-item" type="button">
+                                <Download size={14} className="me-2" />Export
+                              </button>
+                            </li>
+                            <li><hr className="dropdown-divider" /></li>
+                            <li>
+                              <button 
+                                className="dropdown-item text-danger" 
+                                type="button"
+                                onClick={() => handleDeleteTemplate(template.id)}
+                                data-testid={`delete-template-${template.id}`}
+                              >
+                                <Trash2 size={14} className="me-2" />Delete
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      ) : (
+                        <div className="d-flex align-items-center">
+                          <Badge bg="info" className="me-2 small">Default Template</Badge>
+                          <Button 
+                            variant="outline-secondary" 
+                            size="sm"
+                            onClick={() => handleDuplicateTemplate(template)}
+                            data-testid={`duplicate-system-template-${template.id}`}
+                            title="Duplicate this system template to create your own editable version"
+                          >
+                            <Copy size={16} />
+                          </Button>
+                        </div>
+                      )}
                     </Card.Header>
                     <Card.Body>
                       <p className="text-muted small mb-3">{template.description}</p>
@@ -847,23 +1174,30 @@ const Templates: React.FC = () => {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Template Name</Form.Label>
+                  <Form.Label>Template Name <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => handleFieldChange('name', e.target.value)}
                     placeholder="Enter template name"
                     data-testid="template-name-input"
+                    isInvalid={formTouched.name && !!formErrors.name}
+                    isValid={formTouched.name && !formErrors.name && formData.name.length > 0}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {formErrors.name}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Category</Form.Label>
+                  <Form.Label>Category <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     value={formData.category}
-                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    onChange={(e) => handleFieldChange('category', e.target.value)}
                     data-testid="template-category-select"
+                    isInvalid={formTouched.category && !!formErrors.category}
+                    isValid={formTouched.category && !formErrors.category}
                   >
                     {categories.slice(1).map(category => (
                       <option key={category} value={category}>
@@ -871,19 +1205,30 @@ const Templates: React.FC = () => {
                       </option>
                     ))}
                   </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {formErrors.category}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
             <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
+              <Form.Label>Description <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Describe your template"
+                onChange={(e) => handleFieldChange('description', e.target.value)}
+                placeholder="Describe your template (minimum 10 characters)"
                 data-testid="template-description-input"
+                isInvalid={formTouched.description && !!formErrors.description}
+                isValid={formTouched.description && !formErrors.description && formData.description.length > 0}
               />
+              <Form.Control.Feedback type="invalid">
+                {formErrors.description}
+              </Form.Control.Feedback>
+              <Form.Text className="text-muted">
+                {formData.description.length}/500 characters
+              </Form.Text>
             </Form.Group>
             <Row>
               <Col md={6}>
@@ -906,31 +1251,589 @@ const Templates: React.FC = () => {
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Tags (comma-separated)</Form.Label>
+                  <Form.Label>Tags (comma-separated) <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     value={formData.tags.join(', ')}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag) 
-                    }))}
-                    placeholder="e.g., support, customer-service"
+                    onChange={(e) => {
+                      const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                      handleFieldChange('tags', tagsArray);
+                    }}
+                    placeholder="e.g., support, customer-service (max 10 tags)"
                     data-testid="template-tags-input"
+                    isInvalid={formTouched.tags && !!formErrors.tags}
+                    isValid={formTouched.tags && !formErrors.tags && formData.tags.length > 0}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {formErrors.tags}
+                  </Form.Control.Feedback>
+                  <Form.Text className="text-muted">
+                    {formData.tags.length}/10 tags
+                  </Form.Text>
                 </Form.Group>
               </Col>
             </Row>
             <Form.Group className="mb-3">
-              <Form.Label>Instructions</Form.Label>
+              <Form.Label>Instructions <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 as="textarea"
                 rows={5}
                 value={formData.instructions}
-                onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
-                placeholder="Enter detailed instructions for the chatbot behavior"
+                onChange={(e) => handleFieldChange('instructions', e.target.value)}
+                placeholder="Enter detailed instructions for the chatbot behavior (minimum 20 characters)"
                 data-testid="template-instructions-input"
+                isInvalid={formTouched.instructions && !!formErrors.instructions}
+                isValid={formTouched.instructions && !formErrors.instructions && formData.instructions.length > 0}
               />
+              <Form.Control.Feedback type="invalid">
+                {formErrors.instructions}
+              </Form.Control.Feedback>
+              <Form.Text className="text-muted">
+                {formData.instructions.length}/2000 characters
+              </Form.Text>
             </Form.Group>
+
+            {/* Scope & Training Section */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h6 className="mb-0">
+                  <Bot className="me-2" size={16} />
+                  Scope & Training
+                </h6>
+              </Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label>AI Scope Level</Form.Label>
+                  <Form.Select
+                    value={formData.scope}
+                    onChange={(e) => setFormData(prev => ({ ...prev, scope: e.target.value as any }))}
+                    data-testid="template-scope-select"
+                  >
+                    <option value="general">General Purpose - Broad knowledge across domains</option>
+                    <option value="specialized">Specialized - Focused on specific industry/field</option>
+                    <option value="expert">Expert Level - Deep domain expertise required</option>
+                    <option value="domain-specific">Domain Specific - Highly specialized knowledge</option>
+                  </Form.Select>
+                </Form.Group>
+
+                <Form.Label>Training Q&A Pairs</Form.Label>
+                <Form.Text className="text-muted d-block mb-2">
+                  Add question-answer pairs to train the AI on specific responses and behaviors.
+                </Form.Text>
+                
+                {formData.trainingQA.map((qa, index) => (
+                  <Card key={index} className="mb-3 border-light">
+                    <Card.Body className="py-2">
+                      <Row>
+                        <Col md={5}>
+                          <Form.Group className="mb-2">
+                            <Form.Label className="small">Question {index + 1}</Form.Label>
+                            <Form.Control
+                              type="text"
+                              value={qa.question}
+                              onChange={(e) => {
+                                const newQA = [...formData.trainingQA];
+                                newQA[index].question = e.target.value;
+                                setFormData(prev => ({ ...prev, trainingQA: newQA }));
+                              }}
+                              placeholder="Enter training question..."
+                              data-testid={`training-question-${index}`}
+                            />
+                          </Form.Group>
+                        </Col>
+                        <Col md={5}>
+                          <Form.Group className="mb-2">
+                            <Form.Label className="small">Answer {index + 1}</Form.Label>
+                            <Form.Control
+                              as="textarea"
+                              rows={2}
+                              value={qa.answer}
+                              onChange={(e) => {
+                                const newQA = [...formData.trainingQA];
+                                newQA[index].answer = e.target.value;
+                                setFormData(prev => ({ ...prev, trainingQA: newQA }));
+                              }}
+                              placeholder="Enter expected answer..."
+                              data-testid={`training-answer-${index}`}
+                            />
+                          </Form.Group>
+                        </Col>
+                        <Col md={2} className="d-flex align-items-end">
+                          {formData.trainingQA.length > 1 && (
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => {
+                                const newQA = formData.trainingQA.filter((_, i) => i !== index);
+                                setFormData(prev => ({ ...prev, trainingQA: newQA }));
+                              }}
+                              className="mb-2"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          )}
+                        </Col>
+                      </Row>
+                    </Card.Body>
+                  </Card>
+                ))}
+                
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      trainingQA: [...prev.trainingQA, { question: '', answer: '' }]
+                    }));
+                  }}
+                  className="mb-2"
+                >
+                  <Plus size={14} className="me-1" />
+                  Add Q&A Pair
+                </Button>
+              </Card.Body>
+            </Card>
+
+            {/* Tools Selection Section */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h6 className="mb-0">
+                  <FileText className="me-2" size={16} />
+                  Tools & Integrations
+                </h6>
+              </Card.Header>
+              <Card.Body>
+                <Form.Text className="text-muted d-block mb-3">
+                  Enable tools and provide API keys for enhanced AI capabilities.
+                </Form.Text>
+
+                <Row>
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Web Search</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['web-search'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'web-search': { ...prev.tools['web-search'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-web-search-toggle"
+                        />
+                      </div>
+                      {formData.tools['web-search'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Search API Key"
+                          value={formData.tools['web-search'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'web-search': { ...prev.tools['web-search'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-web-search-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Email Integration</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['email'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'email': { ...prev.tools['email'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-email-toggle"
+                        />
+                      </div>
+                      {formData.tools['email'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Email Service API Key"
+                          value={formData.tools['email'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'email': { ...prev.tools['email'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-email-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Calendar Management</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['calendar'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'calendar': { ...prev.tools['calendar'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-calendar-toggle"
+                        />
+                      </div>
+                      {formData.tools['calendar'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Calendar API Key (Google/Outlook)"
+                          value={formData.tools['calendar'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'calendar': { ...prev.tools['calendar'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-calendar-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>File System Access</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['file-system'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'file-system': { ...prev.tools['file-system'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-file-system-toggle"
+                        />
+                      </div>
+                      <small className="text-muted">Read/write access to local files</small>
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Database Access</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['database'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'database': { ...prev.tools['database'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-database-toggle"
+                        />
+                      </div>
+                      {formData.tools['database'].enabled && (
+                        <div>
+                          <Form.Control
+                            type="text"
+                            placeholder="Database Host"
+                            value={formData.tools['database'].config?.host || ''}
+                            onChange={(e) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                tools: {
+                                  ...prev.tools,
+                                  'database': {
+                                    ...prev.tools['database'],
+                                    config: { ...prev.tools['database'].config, host: e.target.value }
+                                  }
+                                }
+                              }));
+                            }}
+                            className="mb-2"
+                            data-testid="tool-database-host"
+                          />
+                          <Row>
+                            <Col md={6}>
+                              <Form.Control
+                                type="text"
+                                placeholder="Port"
+                                value={formData.tools['database'].config?.port || ''}
+                                onChange={(e) => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    tools: {
+                                      ...prev.tools,
+                                      'database': {
+                                        ...prev.tools['database'],
+                                        config: { ...prev.tools['database'].config, port: e.target.value }
+                                      }
+                                    }
+                                  }));
+                                }}
+                                data-testid="tool-database-port"
+                              />
+                            </Col>
+                            <Col md={6}>
+                              <Form.Control
+                                type="text"
+                                placeholder="Database Name"
+                                value={formData.tools['database'].config?.database || ''}
+                                onChange={(e) => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    tools: {
+                                      ...prev.tools,
+                                      'database': {
+                                        ...prev.tools['database'],
+                                        config: { ...prev.tools['database'].config, database: e.target.value }
+                                      }
+                                    }
+                                  }));
+                                }}
+                                data-testid="tool-database-name"
+                              />
+                            </Col>
+                          </Row>
+                        </div>
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>API Client</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['api-client'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'api-client': { ...prev.tools['api-client'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-api-client-toggle"
+                        />
+                      </div>
+                      {formData.tools['api-client'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="API Base URL or Key"
+                          value={formData.tools['api-client'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'api-client': { ...prev.tools['api-client'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-api-client-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Weather Service</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['weather'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'weather': { ...prev.tools['weather'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-weather-toggle"
+                        />
+                      </div>
+                      {formData.tools['weather'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Weather API Key"
+                          value={formData.tools['weather'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'weather': { ...prev.tools['weather'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-weather-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Maps & Location</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['maps'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'maps': { ...prev.tools['maps'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-maps-toggle"
+                        />
+                      </div>
+                      {formData.tools['maps'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Maps API Key (Google Maps)"
+                          value={formData.tools['maps'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'maps': { ...prev.tools['maps'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-maps-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Translation Service</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['translation'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'translation': { ...prev.tools['translation'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-translation-toggle"
+                        />
+                      </div>
+                      {formData.tools['translation'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Translation API Key"
+                          value={formData.tools['translation'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'translation': { ...prev.tools['translation'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-translation-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Image Analysis</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['image-analysis'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'image-analysis': { ...prev.tools['image-analysis'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-image-analysis-toggle"
+                        />
+                      </div>
+                      {formData.tools['image-analysis'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Vision API Key"
+                          value={formData.tools['image-analysis'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'image-analysis': { ...prev.tools['image-analysis'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="tool-image-analysis-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+
             <Form.Group className="mb-3">
               <Form.Check
                 type="checkbox"
@@ -949,10 +1852,17 @@ const Templates: React.FC = () => {
           <Button 
             variant="primary"
             onClick={() => handleSubmitTemplate(false)}
-            disabled={!formData.name || !formData.description}
+            disabled={isSubmitting || !isFormValid}
             data-testid="submit-template-btn"
           >
-            Create Template
+            {isSubmitting ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
+                Creating...
+              </>
+            ) : (
+              'Create Template'
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
@@ -976,23 +1886,30 @@ const Templates: React.FC = () => {
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Template Name</Form.Label>
+                  <Form.Label>Template Name <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => handleFieldChange('name', e.target.value)}
                     placeholder="Enter template name"
                     data-testid="edit-template-name-input"
+                    isInvalid={formTouched.name && !!formErrors.name}
+                    isValid={formTouched.name && !formErrors.name && formData.name.length > 0}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {formErrors.name}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Category</Form.Label>
+                  <Form.Label>Category <span className="text-danger">*</span></Form.Label>
                   <Form.Select
                     value={formData.category}
-                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                    onChange={(e) => handleFieldChange('category', e.target.value)}
                     data-testid="edit-template-category-select"
+                    isInvalid={formTouched.category && !!formErrors.category}
+                    isValid={formTouched.category && !formErrors.category}
                   >
                     {categories.slice(1).map(category => (
                       <option key={category} value={category}>
@@ -1000,19 +1917,30 @@ const Templates: React.FC = () => {
                       </option>
                     ))}
                   </Form.Select>
+                  <Form.Control.Feedback type="invalid">
+                    {formErrors.category}
+                  </Form.Control.Feedback>
                 </Form.Group>
               </Col>
             </Row>
             <Form.Group className="mb-3">
-              <Form.Label>Description</Form.Label>
+              <Form.Label>Description <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Describe your template"
+                onChange={(e) => handleFieldChange('description', e.target.value)}
+                placeholder="Describe your template (minimum 10 characters)"
                 data-testid="edit-template-description-input"
+                isInvalid={formTouched.description && !!formErrors.description}
+                isValid={formTouched.description && !formErrors.description && formData.description.length > 0}
               />
+              <Form.Control.Feedback type="invalid">
+                {formErrors.description}
+              </Form.Control.Feedback>
+              <Form.Text className="text-muted">
+                {formData.description.length}/500 characters
+              </Form.Text>
             </Form.Group>
             <Row>
               <Col md={6}>
@@ -1035,31 +1963,589 @@ const Templates: React.FC = () => {
               </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Tags (comma-separated)</Form.Label>
+                  <Form.Label>Tags (comma-separated) <span className="text-danger">*</span></Form.Label>
                   <Form.Control
                     type="text"
                     value={formData.tags.join(', ')}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag) 
-                    }))}
-                    placeholder="e.g., support, customer-service"
+                    onChange={(e) => {
+                      const tagsArray = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                      handleFieldChange('tags', tagsArray);
+                    }}
+                    placeholder="e.g., support, customer-service (max 10 tags)"
                     data-testid="edit-template-tags-input"
+                    isInvalid={formTouched.tags && !!formErrors.tags}
+                    isValid={formTouched.tags && !formErrors.tags && formData.tags.length > 0}
                   />
+                  <Form.Control.Feedback type="invalid">
+                    {formErrors.tags}
+                  </Form.Control.Feedback>
+                  <Form.Text className="text-muted">
+                    {formData.tags.length}/10 tags
+                  </Form.Text>
                 </Form.Group>
               </Col>
             </Row>
             <Form.Group className="mb-3">
-              <Form.Label>Instructions</Form.Label>
+              <Form.Label>Instructions <span className="text-danger">*</span></Form.Label>
               <Form.Control
                 as="textarea"
                 rows={5}
                 value={formData.instructions}
-                onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
-                placeholder="Enter detailed instructions for the chatbot behavior"
+                onChange={(e) => handleFieldChange('instructions', e.target.value)}
+                placeholder="Enter detailed instructions for the chatbot behavior (minimum 20 characters)"
                 data-testid="edit-template-instructions-input"
+                isInvalid={formTouched.instructions && !!formErrors.instructions}
+                isValid={formTouched.instructions && !formErrors.instructions && formData.instructions.length > 0}
               />
+              <Form.Control.Feedback type="invalid">
+                {formErrors.instructions}
+              </Form.Control.Feedback>
+              <Form.Text className="text-muted">
+                {formData.instructions.length}/2000 characters
+              </Form.Text>
             </Form.Group>
+
+            {/* Scope & Training Section */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h6 className="mb-0">
+                  <Bot className="me-2" size={16} />
+                  Scope & Training
+                </h6>
+              </Card.Header>
+              <Card.Body>
+                <Form.Group className="mb-3">
+                  <Form.Label>AI Scope Level</Form.Label>
+                  <Form.Select
+                    value={formData.scope}
+                    onChange={(e) => setFormData(prev => ({ ...prev, scope: e.target.value as any }))}
+                    data-testid="edit-template-scope-select"
+                  >
+                    <option value="general">General Purpose - Broad knowledge across domains</option>
+                    <option value="specialized">Specialized - Focused on specific industry/field</option>
+                    <option value="expert">Expert Level - Deep domain expertise required</option>
+                    <option value="domain-specific">Domain Specific - Highly specialized knowledge</option>
+                  </Form.Select>
+                </Form.Group>
+
+                <Form.Label>Training Q&A Pairs</Form.Label>
+                <Form.Text className="text-muted d-block mb-2">
+                  Add question-answer pairs to train the AI on specific responses and behaviors.
+                </Form.Text>
+                
+                {formData.trainingQA.map((qa, index) => (
+                  <Card key={index} className="mb-3 border-light">
+                    <Card.Body className="py-2">
+                      <Row>
+                        <Col md={5}>
+                          <Form.Group className="mb-2">
+                            <Form.Label className="small">Question {index + 1}</Form.Label>
+                            <Form.Control
+                              type="text"
+                              value={qa.question}
+                              onChange={(e) => {
+                                const newQA = [...formData.trainingQA];
+                                newQA[index].question = e.target.value;
+                                setFormData(prev => ({ ...prev, trainingQA: newQA }));
+                              }}
+                              placeholder="Enter training question..."
+                              data-testid={`edit-training-question-${index}`}
+                            />
+                          </Form.Group>
+                        </Col>
+                        <Col md={5}>
+                          <Form.Group className="mb-2">
+                            <Form.Label className="small">Answer {index + 1}</Form.Label>
+                            <Form.Control
+                              as="textarea"
+                              rows={2}
+                              value={qa.answer}
+                              onChange={(e) => {
+                                const newQA = [...formData.trainingQA];
+                                newQA[index].answer = e.target.value;
+                                setFormData(prev => ({ ...prev, trainingQA: newQA }));
+                              }}
+                              placeholder="Enter expected answer..."
+                              data-testid={`edit-training-answer-${index}`}
+                            />
+                          </Form.Group>
+                        </Col>
+                        <Col md={2} className="d-flex align-items-end">
+                          {formData.trainingQA.length > 1 && (
+                            <Button
+                              variant="outline-danger"
+                              size="sm"
+                              onClick={() => {
+                                const newQA = formData.trainingQA.filter((_, i) => i !== index);
+                                setFormData(prev => ({ ...prev, trainingQA: newQA }));
+                              }}
+                              className="mb-2"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          )}
+                        </Col>
+                      </Row>
+                    </Card.Body>
+                  </Card>
+                ))}
+                
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      trainingQA: [...prev.trainingQA, { question: '', answer: '' }]
+                    }));
+                  }}
+                  className="mb-2"
+                >
+                  <Plus size={14} className="me-1" />
+                  Add Q&A Pair
+                </Button>
+              </Card.Body>
+            </Card>
+
+            {/* Tools Selection Section */}
+            <Card className="mb-4">
+              <Card.Header>
+                <h6 className="mb-0">
+                  <FileText className="me-2" size={16} />
+                  Tools & Integrations
+                </h6>
+              </Card.Header>
+              <Card.Body>
+                <Form.Text className="text-muted d-block mb-3">
+                  Enable tools and provide API keys for enhanced AI capabilities.
+                </Form.Text>
+
+                <Row>
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Web Search</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['web-search'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'web-search': { ...prev.tools['web-search'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-web-search-toggle"
+                        />
+                      </div>
+                      {formData.tools['web-search'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Search API Key"
+                          value={formData.tools['web-search'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'web-search': { ...prev.tools['web-search'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-web-search-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Email Integration</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['email'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'email': { ...prev.tools['email'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-email-toggle"
+                        />
+                      </div>
+                      {formData.tools['email'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Email Service API Key"
+                          value={formData.tools['email'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'email': { ...prev.tools['email'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-email-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Calendar Management</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['calendar'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'calendar': { ...prev.tools['calendar'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-calendar-toggle"
+                        />
+                      </div>
+                      {formData.tools['calendar'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Calendar API Key (Google/Outlook)"
+                          value={formData.tools['calendar'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'calendar': { ...prev.tools['calendar'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-calendar-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>File System Access</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['file-system'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'file-system': { ...prev.tools['file-system'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-file-system-toggle"
+                        />
+                      </div>
+                      <small className="text-muted">Read/write access to local files</small>
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Database Access</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['database'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'database': { ...prev.tools['database'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-database-toggle"
+                        />
+                      </div>
+                      {formData.tools['database'].enabled && (
+                        <div>
+                          <Form.Control
+                            type="text"
+                            placeholder="Database Host"
+                            value={formData.tools['database'].config?.host || ''}
+                            onChange={(e) => {
+                              setFormData(prev => ({
+                                ...prev,
+                                tools: {
+                                  ...prev.tools,
+                                  'database': {
+                                    ...prev.tools['database'],
+                                    config: { ...prev.tools['database'].config, host: e.target.value }
+                                  }
+                                }
+                              }));
+                            }}
+                            className="mb-2"
+                            data-testid="edit-tool-database-host"
+                          />
+                          <Row>
+                            <Col md={6}>
+                              <Form.Control
+                                type="text"
+                                placeholder="Port"
+                                value={formData.tools['database'].config?.port || ''}
+                                onChange={(e) => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    tools: {
+                                      ...prev.tools,
+                                      'database': {
+                                        ...prev.tools['database'],
+                                        config: { ...prev.tools['database'].config, port: e.target.value }
+                                      }
+                                    }
+                                  }));
+                                }}
+                                data-testid="edit-tool-database-port"
+                              />
+                            </Col>
+                            <Col md={6}>
+                              <Form.Control
+                                type="text"
+                                placeholder="Database Name"
+                                value={formData.tools['database'].config?.database || ''}
+                                onChange={(e) => {
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    tools: {
+                                      ...prev.tools,
+                                      'database': {
+                                        ...prev.tools['database'],
+                                        config: { ...prev.tools['database'].config, database: e.target.value }
+                                      }
+                                    }
+                                  }));
+                                }}
+                                data-testid="edit-tool-database-name"
+                              />
+                            </Col>
+                          </Row>
+                        </div>
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>API Client</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['api-client'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'api-client': { ...prev.tools['api-client'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-api-client-toggle"
+                        />
+                      </div>
+                      {formData.tools['api-client'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="API Base URL or Key"
+                          value={formData.tools['api-client'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'api-client': { ...prev.tools['api-client'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-api-client-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Weather Service</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['weather'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'weather': { ...prev.tools['weather'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-weather-toggle"
+                        />
+                      </div>
+                      {formData.tools['weather'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Weather API Key"
+                          value={formData.tools['weather'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'weather': { ...prev.tools['weather'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-weather-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Maps & Location</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['maps'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'maps': { ...prev.tools['maps'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-maps-toggle"
+                        />
+                      </div>
+                      {formData.tools['maps'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Maps API Key (Google Maps)"
+                          value={formData.tools['maps'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'maps': { ...prev.tools['maps'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-maps-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Translation Service</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['translation'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'translation': { ...prev.tools['translation'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-translation-toggle"
+                        />
+                      </div>
+                      {formData.tools['translation'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Translation API Key"
+                          value={formData.tools['translation'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'translation': { ...prev.tools['translation'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-translation-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+
+                  <Col md={6}>
+                    <div className="tool-item mb-3 p-3 border rounded">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <strong>Image Analysis</strong>
+                        <Form.Check
+                          type="switch"
+                          checked={formData.tools['image-analysis'].enabled}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'image-analysis': { ...prev.tools['image-analysis'], enabled: e.target.checked }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-image-analysis-toggle"
+                        />
+                      </div>
+                      {formData.tools['image-analysis'].enabled && (
+                        <Form.Control
+                          type="text"
+                          placeholder="Vision API Key"
+                          value={formData.tools['image-analysis'].apiKey || ''}
+                          onChange={(e) => {
+                            setFormData(prev => ({
+                              ...prev,
+                              tools: {
+                                ...prev.tools,
+                                'image-analysis': { ...prev.tools['image-analysis'], apiKey: e.target.value }
+                              }
+                            }));
+                          }}
+                          data-testid="edit-tool-image-analysis-api-key"
+                        />
+                      )}
+                    </div>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+
             <Form.Group className="mb-3">
               <Form.Check
                 type="checkbox"
@@ -1078,10 +2564,17 @@ const Templates: React.FC = () => {
           <Button 
             variant="primary"
             onClick={() => handleSubmitTemplate(true)}
-            disabled={!formData.name || !formData.description}
+            disabled={isSubmitting || !isFormValid}
             data-testid="update-template-btn"
           >
-            Update Template
+            {isSubmitting ? (
+              <>
+                <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
+                Updating...
+              </>
+            ) : (
+              'Update Template'
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
