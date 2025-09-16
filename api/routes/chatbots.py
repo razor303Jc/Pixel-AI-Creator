@@ -21,11 +21,18 @@ from core.database import get_db, Project, Client
 # Import models
 from models.client import ProjectCreate, ProjectResponse
 
-# Import build queue
-from services.build_queue import build_manager
-
 # Configure logging
 logger = logging.getLogger(__name__)
+
+# Import build queue with error handling
+try:
+    # from services.build_queue import build_manager
+    # Temporarily disabled due to Docker connection issues
+    build_manager = None
+    logger.info("Build manager disabled in chatbots route")
+except Exception as e:
+    logger.warning(f"Build manager not available in chatbots route: {e}")
+    build_manager = None
 
 # Create router
 router = APIRouter(prefix="/chatbots", tags=["chatbots"])
@@ -83,22 +90,28 @@ async def create_chatbot(
                     "personality_config": new_project.personality_config or {},
                 }
 
-                build_id = await build_manager.queue_build(
-                    project_id=new_project.id,
-                    user_id=current_user["id"],
-                    chatbot_config=chatbot_config,
-                )
+                if build_manager is not None:
+                    build_id = await build_manager.queue_build(
+                        project_id=new_project.id,
+                        user_id=current_user["id"],
+                        chatbot_config=chatbot_config,
+                    )
 
-                # Update project with build ID and status
-                await db.execute(
-                    update(Project)
-                    .where(Project.id == new_project.id)
-                    .values(status="queued", build_id=build_id)
-                )
-                await db.commit()
-                await db.refresh(new_project)
+                    # Update project with build ID and status
+                    await db.execute(
+                        update(Project)
+                        .where(Project.id == new_project.id)
+                        .values(status="queued", build_id=build_id)
+                    )
+                    await db.commit()
+                    await db.refresh(new_project)
 
-                logger.info(f"Auto-build queued for project {new_project.id}")
+                    logger.info(f"Auto-build queued for project {new_project.id}")
+                else:
+                    # Build manager not available, just log the attempt
+                    logger.warning(
+                        f"Auto-build requested but build service unavailable for project {new_project.id}"
+                    )
 
             except Exception as build_error:
                 logger.error(f"Failed to queue auto-build: {str(build_error)}")

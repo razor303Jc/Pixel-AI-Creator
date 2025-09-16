@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  {{assistant_name}}-assistant:
+    image: {{image_name}}:{{image_tag}}
+    container_name: {{assistant_name}}-assistant
+    ports:
+      - "{{port}}:8000"
+    environment:
+      - ASSISTANT_NAME={{assistant_name}}
+      - ASSISTANT_PERSONALITY={{personality}}
+      - ASSISTANT_TEMPLATE={{template}}
+      - CLIENT_ID={{client_id}}
+      - DEBUG={{debug_mode}}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - assistant-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  assistant-network:
+    driver: bridge
+
+volumes:
+  assistant-data:
+    driver: local
+  assistant-logs:
+    driver: local
