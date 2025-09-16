@@ -53,7 +53,9 @@ nltk==3.8.1
 deep-translator==1.11.4
 
 # Background tasks and caching (compatible versions)
+# Celery (Background tasks and scheduling)
 celery[redis]==5.3.4
+flower==2.0.1
 kombu==5.3.4
 
 # System monitoring
