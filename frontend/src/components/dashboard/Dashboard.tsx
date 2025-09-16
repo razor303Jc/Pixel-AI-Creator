@@ -169,6 +169,9 @@ const Dashboard = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   
+  // Navbar state for mobile
+  const [navbarExpanded, setNavbarExpanded] = useState(false);
+  
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [showProfileSettings, setShowProfileSettings] = useState(false);
@@ -484,6 +487,8 @@ const Dashboard = () => {
       {/* Navigation */}
       <Navbar 
         expand="lg" 
+        expanded={navbarExpanded}
+        onToggle={(expanded) => setNavbarExpanded(expanded)}
         className="shadow-sm mb-4"
         style={{ 
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -495,8 +500,8 @@ const Dashboard = () => {
           <Navbar.Brand className="fw-bold">
             🤖 Pixel AI Creator
           </Navbar.Brand>
-          <Navbar.Toggle />
-          <Navbar.Collapse>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link 
                 active={activeView === 'dashboard'}
